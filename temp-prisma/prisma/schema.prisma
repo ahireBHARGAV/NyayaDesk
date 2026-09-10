@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Case {
+  id              String    @id @default(uuid())
+  externalCaseId  String?   @unique
+  caseNumber      String?
+  title           String
+  type            String
+  court           String
+  judge           String
+  nextHearingDate String?
+  status          String
+  source          String    @default("local")
+  lastSyncedAt    DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  hearings        Hearing[]
+}
+
+model Courtroom {
+  id           String   @id @default(uuid())
+  room         String   @unique
+  judge        String
+  status       String
+  currentCase  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Hearing {
+  id        String   @id @default(uuid())
+  caseId    String
+  case      Case     @relation(fields: [caseId], references: [id])
+  date      String
+  time      String
+  room      String
+  judge     String
+  status    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  type      String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}

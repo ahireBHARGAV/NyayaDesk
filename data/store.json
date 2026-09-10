@@ -1,0 +1,246 @@
+{
+  "cases": [
+    {
+      "id": "ABC/2026",
+      "title": "ABC vs XYZ",
+      "type": "Civil Appeal",
+      "court": "High Court of Delhi",
+      "judge": "Justice A. Mehra",
+      "next": "03 Sep, 09:30 AM",
+      "status": "Active"
+    },
+    {
+      "id": "DEF/2026",
+      "title": "DEF vs GHI",
+      "type": "Commercial",
+      "court": "High Court of Delhi",
+      "judge": "Justice B. Rao",
+      "next": "03 Sep, 11:00 AM",
+      "status": "Pending"
+    },
+    {
+      "id": "JKL/2026",
+      "title": "JKL vs MNO",
+      "type": "Writ Petition",
+      "court": "High Court of Delhi",
+      "judge": "Justice C. Shah",
+      "next": "03 Sep, 02:00 PM",
+      "status": "Active"
+    },
+    {
+      "id": "PQR/2026",
+      "title": "PQR vs State",
+      "type": "Criminal",
+      "court": "District Court",
+      "judge": "Justice D. Sen",
+      "next": "12 Sep, 10:30 AM",
+      "status": "Upcoming Hearing"
+    },
+    {
+      "id": "STU/2025",
+      "title": "STU vs VWX",
+      "type": "Civil",
+      "court": "District Court",
+      "judge": "Justice A. Mehra",
+      "next": "—",
+      "status": "Closed"
+    },
+    {
+      "id": "LMN/2026",
+      "title": "Party A vs Party Z",
+      "type": "Civil Appeal",
+      "court": "District Court, Nashik",
+      "judge": "Mr. Patankar",
+      "next": "15 Sept 2026",
+      "status": "Active"
+    },
+    {
+      "id": "RST/2026",
+      "title": "Rao Industries vs Union of India",
+      "type": "Commercial Appeal",
+      "court": "High Court of Delhi",
+      "judge": "Justice B. Rao",
+      "next": "03 Sep, 03:30 PM",
+      "status": "Pending"
+    },
+    {
+      "id": "UVW/2026",
+      "title": "Sharma vs Municipal Corporation",
+      "type": "Writ Petition",
+      "court": "District Court",
+      "judge": "Justice D. Sen",
+      "next": "08 Sep, 12:15 PM",
+      "status": "Upcoming Hearing"
+    }
+  ],
+  "courtrooms": [
+    {
+      "room": "Courtroom 1",
+      "judge": "Justice A. Mehra",
+      "status": "Updated",
+      "current": "ABC/2026"
+    },
+    {
+      "room": "Courtroom 2",
+      "judge": "Justice B. Rao",
+      "status": "Present",
+      "current": "DEF/2026"
+    },
+    {
+      "room": "Courtroom 3",
+      "judge": "Justice C. Shah",
+      "status": "Absent",
+      "current": "GHI/2026"
+    },
+    {
+      "room": "Courtroom 4",
+      "judge": "Justice D. Sen",
+      "status": "Updated",
+      "current": "JKL/2026"
+    },
+    {
+      "room": "Courtroom 5",
+      "judge": "Justice E. Kapoor",
+      "status": "Present",
+      "current": "RST/2026"
+    },
+    {
+      "room": "Courtroom 6",
+      "judge": "Justice F. Nair",
+      "status": "Present",
+      "current": "UVW/2026"
+    }
+  ],
+  "notifications": [
+    {
+      "id": 1,
+      "type": "Hearing Reminder",
+      "message": "Hearing tomorrow — Case ABC vs XYZ",
+      "read": false
+    },
+    {
+      "id": 2,
+      "type": "Action Required",
+      "message": "Filing deadline approaching — Case DEF vs GHI",
+      "read": false
+    }
+  ],
+  "documents": [],
+  "filings": [],
+  "users": [
+    {
+      "id": "ADV-2026-05",
+      "name": "Vaishnavi Bhagat",
+      "email": "advocate@gmail.com",
+      "phone": "7666615994",
+      "court": "High Court of Delhi",
+      "role": "Advocate",
+      "passwordHash": "6f2cdf6a-eb54-481e-b15a-e06b5fe9727e:42fdbf7dbd49c2b672165ae29ae0307c1454af072eea1486edd55c79d0dfb4941b727e11fd3836f10531a5f56b4ddb013b89cfc4e3b67b7d656f34521f25e953"
+    },
+    {
+      "id": "ADV-DEMO",
+      "name": "Demo Advocate",
+      "phone": "+91 9000000000",
+      "court": "High Court of Delhi",
+      "email": "demo@example.com",
+      "role": "Advocate",
+      "passwordHash": "c9c9247b-85f9-4f4a-9d3b-0b13d9440b3b:88ddcfb11ebd1fbda90ce2f7975efb669a07e918bd49c32f2666612fd48f72b2fd6a63c3431694060d6c7debc1860f6225558ea6d462f204916042f5cb7ed74d",
+      "createdAt": "2026-09-03T14:03:48.723Z"
+    },
+    {
+      "name": "Krishna Kale",
+      "id": "AUTH-2005",
+      "email": "authority@gmail.com",
+      "phone": "8978896789",
+      "court": "District Court",
+      "designation": "Court Schedule Officer",
+      "role": "Authority",
+      "passwordHash": "c74f395a-1def-4729-bd71-d3d0b50e459a:0d83edc29288638a1a03b53d820cbb12175c15a2d28eb2a565e8a391c240a0a69bd3798e28e08ebc4cf472764d17659dcf6f9f0b26f12d5125c6d048c2f1ce2c",
+      "createdAt": "2026-09-04T09:54:49.633Z"
+    }
+  ],
+  "profiles": {
+    "advocate": {
+      "name": "Adv. Arjun Rao",
+      "id": "ADV-2026-418",
+      "phone": "+91 98765 43210",
+      "court": "High Court of Delhi",
+      "alerts": true
+    },
+    "authority": {
+      "name": "Rajiv Arora",
+      "id": "AUTH-0018",
+      "phone": "+91 98765 43210",
+      "court": "High Court of Delhi",
+      "alerts": true
+    }
+  },
+  "hearings": [
+    {
+      "id": "H-001",
+      "date": "2026-09-03",
+      "time": "09:30 AM",
+      "case": "ABC vs XYZ",
+      "room": "Courtroom 3",
+      "judge": "Justice A. Mehra",
+      "status": "Scheduled"
+    },
+    {
+      "id": "H-002",
+      "date": "2026-09-03",
+      "time": "11:00 AM",
+      "case": "DEF vs GHI",
+      "room": "Courtroom 5",
+      "judge": "Justice B. Rao",
+      "status": "Scheduled"
+    },
+    {
+      "id": "H-003",
+      "date": "2026-09-03",
+      "time": "02:00 PM",
+      "case": "JKL vs MNO",
+      "room": "Courtroom 2",
+      "judge": "Justice C. Shah",
+      "status": "Scheduled"
+    },
+    {
+      "id": "H-004",
+      "date": "2026-09-12",
+      "time": "10:30 AM",
+      "case": "PQR vs State",
+      "room": "Courtroom 1",
+      "judge": "Justice D. Sen",
+      "status": "Scheduled"
+    },
+    {
+      "id": "H-005",
+      "date": "2026-09-03",
+      "time": "03:30 PM",
+      "case": "Rao Industries vs Union of India",
+      "room": "Courtroom 5",
+      "judge": "Justice E. Kapoor",
+      "status": "Scheduled"
+    },
+    {
+      "id": "H-006",
+      "date": "2026-09-08",
+      "time": "12:15 PM",
+      "case": "Sharma vs Municipal Corporation",
+      "room": "Courtroom 6",
+      "judge": "Justice F. Nair",
+      "status": "Scheduled"
+    }
+  ],
+  "sessions": [
+    {
+      "token": "6a35d7fc-dfaf-44a7-b8f8-5444ab1906f2",
+      "userId": "ADV-2026-05",
+      "createdAt": "2026-09-03T14:05:49.149Z"
+    },
+    {
+      "token": "cf40e41e-9d70-4a29-b882-ed3dcacad5ea",
+      "userId": "ADV-2026-05",
+      "createdAt": "2026-09-04T09:32:29.405Z"
+    }
+  ]
+}
