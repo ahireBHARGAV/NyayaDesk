@@ -2,6 +2,7 @@ import cors from "cors";
 import express from "express";
 import { randomUUID, scryptSync, timingSafeEqual } from "node:crypto";
 import pkg from "@prisma/client";
+import { getMcpData } from "./services/mcpProxy.js";
 const { PrismaClient } = pkg;
 
 const prisma = new PrismaClient();
@@ -38,6 +39,54 @@ const requireAuth = async (req, res, next) => {
 app.get("/api/health/", (_req, res) =>
   res.json({ status: "ok", mode: "prisma-neon" }),
 );
+
+// ----- PUBLIC CNR CASE LOOKUP -----
+// This route deliberately needs no session: a CNR lookup is available from the
+// public home page as well as from either signed-in workspace.
+const publicCase = (item) => ({
+  cnr: item.cnr || item.id,
+  caseType: item.caseType || "Not available",
+  caseStatus: item.caseStatus || "Not available",
+  filingNumber: item.filingNumber || "Not available",
+  filingDate: item.filingDate || null,
+  registrationNumber: item.registrationNumber || "Not available",
+  registrationDate: item.registrationDate || null,
+  firstHearingDate: item.firstHearingDate || null,
+  lastHearingDate: item.lastHearingDate || null,
+  nextHearingDate: item.nextHearingDate || item.decisionDate || null,
+  decisionDate: item.decisionDate || null,
+  courtName: item.courtName || "Not available",
+  courtCode: item.courtCode || "",
+  judges: item.judges || [],
+  petitioners: item.petitioners || [],
+  petitionerAdvocates: item.petitionerAdvocates || [],
+  respondents: item.respondents || [],
+  respondentAdvocates: item.respondentAdvocates || [],
+  act: item.caseCategory || "Not available",
+  hearingCount: item.hearingCount || 0,
+  hasOrders: Boolean(item.hasOrders),
+  hasJudgments: Boolean(item.hasJudgments),
+});
+
+app.get("/api/public/cases/search", async (req, res) => {
+  const cnr = String(req.query.cnr || "").trim().toUpperCase();
+  if (!cnr) return res.status(400).json({ detail: "Enter a CNR number." });
+  const data = await getMcpData();
+  const results = (data.results || [])
+    .filter((item) => String(item.cnr || item.id || "").toUpperCase().includes(cnr))
+    .map(publicCase);
+  return res.json({ results });
+});
+
+app.get("/api/public/cases/:cnr", async (req, res) => {
+  const cnr = decodeURIComponent(req.params.cnr).trim().toUpperCase();
+  const data = await getMcpData();
+  const item = (data.results || []).find(
+    (candidate) => String(candidate.cnr || candidate.id || "").toUpperCase() === cnr,
+  );
+  if (!item) return res.status(404).json({ detail: "No case found for this CNR number." });
+  return res.json(publicCase(item));
+});
 
 // ----- CASES -----
 app.get("/api/cases/", async (_req, res) => {
@@ -424,6 +473,32 @@ app.post("/api/auth/login/", async (req, res) => {
 });
 
 app.get("/api/auth/me/", requireAuth, (req, res) => res.json({ user: publicUser(req.user) }));
+
+app.put("/api/auth/profile/", requireAuth, async (req, res) => {
+  const updates = {};
+  if (req.body.name?.trim()) updates.name = req.body.name.trim();
+  if (req.body.phone !== undefined) updates.phone = req.body.phone.trim() || null;
+  if (req.body.court !== undefined) updates.court = req.body.court || null;
+
+  if (req.body.email !== undefined) {
+    const email = req.body.email.trim().toLowerCase();
+    if (!email) return res.status(400).json({ detail: "Email is required." });
+    const owner = await prisma.user.findUnique({ where: { email } });
+    if (owner && owner.id !== req.user.id)
+      return res.status(409).json({ detail: "That email address is already in use." });
+    updates.email = email;
+  }
+  if (req.body.password) {
+    if (req.body.password.length < 6)
+      return res.status(400).json({ detail: "Password must contain at least 6 characters." });
+    if (!req.body.currentPassword || !req.user.passwordHash || !passwordMatches(req.body.currentPassword, req.user.passwordHash))
+      return res.status(401).json({ detail: "Your current password is incorrect." });
+    updates.passwordHash = hashPassword(req.body.password);
+  }
+
+  const user = await prisma.user.update({ where: { id: req.user.id }, data: updates });
+  return res.json({ user: publicUser(user) });
+});
 
 app.post("/api/auth/logout/", requireAuth, async (req, res) => {
   const token = req.headers.authorization.replace("Bearer ", "");

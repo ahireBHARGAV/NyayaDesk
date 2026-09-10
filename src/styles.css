@@ -312,6 +312,71 @@ footer .brand-mark {
   justify-content: space-between;
   gap: 50px;
 }
+.case-search-preview {
+  position: relative;
+  max-width: 1130px;
+  margin: 0 auto;
+  padding: 70px 30px;
+  display: grid;
+  grid-template-columns: minmax(280px, 0.9fr) minmax(420px, 1.1fr);
+  gap: 20px 50px;
+  align-items: center;
+  border-bottom: 1px solid #edf0f1;
+}
+.case-search-preview h2 {
+  font-size: 32px;
+  margin: 0 0 8px;
+}
+.case-search-preview p { color: var(--muted); margin: 0; }
+.cnr-searchbox { width: 100%; }
+.cnr-help { grid-column: 2; color: var(--muted); margin-top: -13px; font-size: 11px; }
+.case-lookup-page { min-height: 100vh; background: #f7faf9; overflow-x: hidden; touch-action: pan-y; }
+.case-lookup-hero {
+  padding: 65px max(6vw, 30px);
+  background: #14304b;
+  color: #fff;
+  text-align: center;
+}
+.case-lookup-hero h1 { margin: 8px 0 24px; font-size: clamp(28px, 4vw, 40px); }
+.case-lookup-hero .searchbox { margin: auto; text-align: left; }
+.case-lookup-content { max-width: 1050px; margin: 0 auto; padding: 35px 25px 70px; }
+.lookup-message, .lookup-error { padding: 14px 16px; border-radius: 8px; background: #e9f2f1; color: #176966; }
+.lookup-error { background: #fff0f0; color: #9c3e3e; }
+.case-result { width: 100%; background: #fff; border: 1px solid #dde6e7; border-radius: 10px; margin-bottom: 12px; padding: 20px; display: flex; text-align: left; justify-content: space-between; align-items: center; color: var(--ink); gap: 20px; }
+.case-result:hover { border-color: var(--accent); box-shadow: 0 5px 18px #16334a12; }
+.case-result h2 { font-size: 17px; margin: 5px 0; color: var(--navy); }
+.case-result p, .case-result small { color: var(--muted); margin: 0; font-size: 12px; }
+.case-result > div:last-child { display: flex; align-items: flex-end; flex-direction: column; gap: 14px; white-space: nowrap; }
+.case-result span { color: var(--accent); font-size: 12px; font-weight: 700; display: flex; align-items: center; }
+.public-case-details { background: #fff; border: 1px solid #dfe7e7; border-radius: 12px; padding: 28px; }
+.back-results { padding: 0; background: transparent; color: var(--accent); display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; }
+.case-details-heading { display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; padding: 20px 0 24px; border-bottom: 1px solid var(--line); }
+.case-details-heading h1 { font-size: 24px; margin: 5px 0; color: var(--navy); }
+.case-details-heading p:not(.eyebrow) { color: var(--muted); margin: 0; font-size: 13px; }
+.case-summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: #e1e8e9; margin: 24px 0; border: 1px solid #e1e8e9; border-radius: 8px; overflow: hidden; }
+.detail { background: #fbfcfc; padding: 14px; min-width: 0; }
+.detail small, .detail b { display: block; }
+.detail small { color: var(--muted); font-size: 11px; margin-bottom: 5px; }
+.detail b { color: var(--navy); font-size: 13px; overflow-wrap: anywhere; }
+.party-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 30px; }
+.party-grid section { background: #f6faf9; padding: 17px; border-radius: 8px; border-left: 3px solid var(--accent); }
+.party-grid h2 { margin: 0 0 9px; font-size: 14px; color: var(--navy); }
+.party-grid p { margin: 0 0 7px; font-size: 13px; }
+.party-grid small { color: var(--muted); font-size: 12px; }
+.acts-section { border-top: 1px solid var(--line); padding: 25px 0 30px; }
+.acts-section h2 { font-size: 18px; margin: 5px 0 16px; }
+.acts-grid { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid #dce7dc; border-radius: 8px; overflow: hidden; background: #dce7dc; gap: 1px; }
+.acts-grid > * { min-height: 104px; padding: 17px; background: #f3fae4; text-align: left; color: var(--ink); }
+.acts-grid button:hover { background: #e7f5cf; }.acts-grid small, .acts-grid b { display: block; }.acts-grid small { color: #5f6d57; font-size: 11px; margin-bottom: 9px; }.acts-grid b { color: var(--navy); font-size: 13px; }.acts-grid span { display: flex; align-items: center; gap: 4px; color: var(--accent); font-size: 11px; font-weight: 700; margin-top: 12px; }
+.act-explanation { display: flex; gap: 10px; padding: 14px 16px; margin-top: 10px; border-radius: 7px; background: #edf7f5; color: #285452; font-size: 13px; line-height: 1.5; }.act-explanation svg { flex: 0 0 auto; color: var(--accent); }.act-explanation p { margin: 0; }
+.daily-status-page { background: #fff; border: 1px solid #dfe7e7; border-radius: 12px; padding: 32px; text-align: center; }.daily-status-page > .eyebrow { margin-top: 30px; }.daily-status-page h1 { margin: 6px 0 22px; color: var(--navy); font-size: 27px; }.daily-case-meta { display: flex; flex-direction: column; gap: 5px; font-size: 13px; color: var(--ink); }.daily-case-meta b { font-size: 15px; color: var(--navy); }.daily-status-grid { margin: 28px 0 0; padding: 20px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); display: grid; grid-template-columns: repeat(2, 1fr); text-align: left; gap: 1px; background: #e1e8e9; }.daily-status-grid .detail { background: #fff; }.daily-judge { text-align: right; margin: 15px 0; color: var(--navy); font-size: 12px; }.daily-actions { display: flex; justify-content: center; gap: 10px; margin-top: 34px; }
+.hearing-history { border-top: 1px solid var(--line); padding-top: 25px; }
+.hearing-history h2 { font-size: 18px; margin: 5px 0; }
+.record-note { color: var(--muted); font-size: 12px; margin: 0 0 16px; }
+.hearing-item { width: 100%; padding: 15px; background: #fff; border: 1px solid #dde6e7; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; color: var(--ink); text-align: left; margin-top: 9px; }
+.hearing-item:hover, .hearing-item.selected { border-color: var(--accent); background: #f2f9f8; }
+.hearing-item b, .hearing-item small { display: block; }.hearing-item b { font-size: 13px; color: var(--navy); }.hearing-item small { color: var(--muted); font-size: 12px; margin-top: 3px; }
+.hearing-detail-card { margin-top: 18px; padding: 21px; background: #eef7f5; border-radius: 9px; display: flex; justify-content: space-between; align-items: end; gap: 20px; }.hearing-detail-card h2 { margin: 4px 0 15px; font-size: 20px; }.hearing-detail-card .detail { background: transparent; padding: 6px 0; max-width: 650px; }.hearing-detail-card .btn { white-space: nowrap; }
 .search-preview h2,
 .features h2,
 .steps h2 {
@@ -517,6 +582,10 @@ footer p {
   outline-color: var(--accent);
   background: white;
 }
+.password-field { position: relative; margin-top: 7px; }
+.password-field input { margin-top: 0 !important; padding-right: 43px !important; }
+.password-field button { position: absolute; right: 5px; top: 50%; transform: translateY(-50%); display: grid; place-items: center; width: 35px; height: 35px; padding: 0; border-radius: 6px; background: transparent; color: #607080; }
+.password-field button:hover { background: #eef4f3; color: var(--accent); }
 .login-card > .btn {
   width: 100%;
   margin-top: 22px;
@@ -1361,6 +1430,8 @@ aside .nav-active {
     flex-direction: column;
     align-items: flex-start;
   }
+  .case-search-preview { grid-template-columns: 1fr; gap: 22px; }
+  .cnr-help { grid-column: auto; margin-top: -17px; }
   .searchbox {
     width: 100%;
   }
@@ -1385,6 +1456,18 @@ aside .nav-active {
   .search-preview {
     padding: 50px 25px;
   }
+  .case-search-preview { padding: 50px 25px; }
+  .case-search-preview h2 { font-size: 28px; }
+  .case-lookup-hero { padding: 48px 20px; }
+  .case-lookup-content { padding: 24px 16px 55px; }
+  .public-case-details { padding: 19px; }
+  .case-summary-grid { grid-template-columns: repeat(2, 1fr); }
+  .party-grid { grid-template-columns: 1fr; }
+  .daily-status-page { padding: 22px; }
+  .hearing-detail-card { align-items: flex-start; flex-direction: column; }
+  .case-lookup-page::before { content: ""; position: fixed; z-index: 50; left: 0; top: 42%; width: 3px; height: 52px; border-radius: 0 4px 4px 0; background: var(--accent); opacity: .35; pointer-events: none; }
+  .case-lookup-page .public-nav { height: 64px; }
+  .case-lookup-page .public-nav .btn { font-size: 12px; padding: 9px 11px; }
   .feature-grid {
     grid-template-columns: 1fr;
   }
@@ -1767,6 +1850,9 @@ aside .nav-active {
 .profile-nav:hover {
   background: #c5dfdb;
 }
+.public-account-menu { position: relative; }
+.public-account-dropdown { position: absolute; top: calc(100% + 6px); right: 0; z-index: 40; min-width: 172px; padding: 6px; border: 1px solid var(--line); border-radius: 8px; background: #fff; box-shadow: 0 12px 28px #14253d20; }
+.public-account-dropdown button { display: flex; width: 100%; align-items: center; gap: 9px; padding: 10px; border-radius: 6px; background: transparent; color: var(--ink); font-size: 13px; text-align: left; }.public-account-dropdown button:hover { background: #eef5f4; }.public-account-dropdown button:last-child { color: #ae4242; }
 .profile-photo {
   overflow: hidden;
   flex-shrink: 0;
@@ -1776,6 +1862,10 @@ aside .nav-active {
   height: 100%;
   object-fit: cover;
 }
+.avatar.profile-photo { overflow: hidden; }
+.profile-form .profile-alerts,
+.profile-form > .btn { grid-column: 1 / -1; }
+.profile-form .profile-alerts { margin-top: 20px; }
 .calendar {
   max-width: 1000px;
 }
@@ -1884,6 +1974,19 @@ aside .nav-active {
   .search-preview {
     padding: 42px 18px 50px;
   }
+  .case-search-preview { padding: 42px 18px 50px; }
+  .case-search-preview h2 { font-size: 27px; }
+  .case-result, .case-details-heading { align-items: flex-start; flex-direction: column; }
+  .case-result > div:last-child { align-items: flex-start; gap: 9px; }
+  .case-summary-grid { grid-template-columns: 1fr; }
+  .acts-grid, .daily-status-grid { grid-template-columns: 1fr; }
+  .daily-judge { text-align: left; }
+  .case-lookup-hero .searchbox { flex-wrap: wrap; padding: 10px; }
+  .case-lookup-hero .searchbox input { min-height: 34px; }
+  .case-lookup-hero .searchbox .btn { width: 100%; }
+  .case-result { padding: 16px; gap: 12px; }
+  .public-case-details { border-radius: 9px; }
+  .daily-status-page { border-radius: 9px; }
 
   .searchbox {
     padding-left: 10px;

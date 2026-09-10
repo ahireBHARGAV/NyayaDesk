@@ -53,6 +53,7 @@ export function RoleCard({ icon, title, desc, onClick }) {
 export function Login({ role, go }) {
   const authority = role === "Authority";
   const [message, setMessage] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const signIn = async (e) => {
     e.preventDefault();
     const form = Object.fromEntries(new FormData(e.currentTarget));
@@ -98,12 +99,12 @@ export function Login({ role, go }) {
         </label>
         <label>
           Password
-          <input
-            name="password"
-            type="password"
-            required
-            placeholder="Enter your password"
-          />
+          <div className="password-field">
+            <input name="password" type={showPassword ? "text" : "password"} required placeholder="Enter your password" autoComplete="current-password" />
+            <button type="button" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? "Hide password" : "Show password"} title={showPassword ? "Hide password" : "Show password"}>
+              <Icon name={showPassword ? "EyeOff" : "Eye"} size={18} />
+            </button>
+          </div>
         </label>
         <Button type="submit">
           Sign In <Icon name="ArrowRight" size={16} />
@@ -127,6 +128,7 @@ export function Login({ role, go }) {
 export function Signup({ role, go }) {
   const authority = role === "Authority";
   const [message, setMessage] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const submit = async (e) => {
     e.preventDefault();
     const form = Object.fromEntries(new FormData(e.currentTarget));
@@ -227,13 +229,12 @@ export function Signup({ role, go }) {
         )}
         <label>
           Password
-          <input
-            name="password"
-            type="password"
-            minLength="6"
-            required
-            placeholder="Minimum 6 characters"
-          />
+          <div className="password-field">
+            <input name="password" type={showPassword ? "text" : "password"} minLength="6" required placeholder="Minimum 6 characters" autoComplete="new-password" />
+            <button type="button" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? "Hide password" : "Show password"} title={showPassword ? "Hide password" : "Show password"}>
+              <Icon name={showPassword ? "EyeOff" : "Eye"} size={18} />
+            </button>
+          </div>
         </label>
         <Button type="submit">
           Create Account <Icon name="ArrowRight" size={16} />

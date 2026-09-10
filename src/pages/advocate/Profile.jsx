@@ -13,12 +13,17 @@ export function Profile({ authority }) {
   const imageKey = `nyaya_profile_image_${stored.id || role}`;
   const [editing, setEditing] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [image, setImage] = useState(
     () => localStorage.getItem(imageKey) || "",
   );
   const [profile, setProfile] = useState({
     name: stored.name || (authority ? "Rajiv Arora" : "Adv. Arjun Rao"),
     id: stored.id || (authority ? "AUTH-0018" : "ADV-2026-418"),
+    email: stored.email || "",
     phone: stored.phone || "+91 98765 43210",
     court: stored.court || "High Court of Delhi",
     alerts: true,
@@ -43,20 +48,27 @@ export function Profile({ authority }) {
   };
   const save = async (e) => {
     e.preventDefault();
-    const res = await fetch(`/api/profiles/${role}/`, {
+    setError("");
+    if (password && !currentPassword)
+      return setError("Enter your current password to set a new password.");
+    const token = localStorage.getItem("nyaya_token");
+    const res = await fetch("/api/auth/profile/", {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(profile),
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ ...profile, password: password || undefined, currentPassword: currentPassword || undefined }),
     });
     if (res.ok) {
-      setProfile(await res.json());
+      const { user } = await res.json();
+      setProfile({ ...profile, name: user.name, email: user.email, phone: user.phone || "", court: user.court || "" });
       localStorage.setItem(
         "nyaya_user",
-        JSON.stringify({ ...stored, ...profile }),
+        JSON.stringify({ ...stored, ...user }),
       );
+      setPassword("");
+      setCurrentPassword("");
       setEditing(false);
       setSaved(true);
-    }
+    } else setError((await res.json()).detail || "Could not update your profile.");
   };
   return (
     <>
@@ -112,6 +124,10 @@ export function Profile({ authority }) {
               />
             </label>
             <label>
+              Email Address
+              <input type="email" value={profile.email} onChange={(e) => update("email", e.target.value)} required />
+            </label>
+            <label>
               Associated Court
               <select
                 value={profile.court}
@@ -121,13 +137,19 @@ export function Profile({ authority }) {
                 <option>District Court</option>
               </select>
             </label>
-            <label className="check-label">
-              <input
-                type="checkbox"
-                checked={profile.alerts}
-                onChange={(e) => update("alerts", e.target.checked)}
-              />{" "}
-              Receive hearing and schedule notifications
+            <label>
+              Current Password
+              <div className="password-field">
+                <input type={showPassword ? "text" : "password"} value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} autoComplete="current-password" placeholder="Required only when changing password" />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? "Hide password" : "Show password"}><Icon name={showPassword ? "EyeOff" : "Eye"} size={18} /></button>
+              </div>
+            </label>
+            <label>
+              New Password <small>(leave blank to keep current password)</small>
+              <input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} minLength="6" autoComplete="new-password" placeholder="Minimum 6 characters" />
+            </label>
+            <label className="check-label profile-alerts">
+              <input type="checkbox" checked={profile.alerts} onChange={(e) => update("alerts", e.target.checked)} /> Receive hearing and schedule notifications
             </label>
             <Button type="submit">Save Changes</Button>
           </form>
@@ -140,6 +162,10 @@ export function Profile({ authority }) {
             <p>
               <small>Contact</small>
               <b>{profile.phone}</b>
+            </p>
+            <p>
+              <small>Email</small>
+              <b>{profile.email || "Not set"}</b>
             </p>
             <p>
               <small>Associated Court</small>
@@ -160,6 +186,7 @@ export function Profile({ authority }) {
             <Icon name="CheckCircle2" /> Profile updated and stored.
           </p>
         )}
+        {error && <p className="lookup-error">{error}</p>}
       </section>
     </>
   );

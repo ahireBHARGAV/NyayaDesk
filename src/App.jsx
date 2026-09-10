@@ -1,7 +1,7 @@
 import { createContext, useEffect, useState } from "react";
 import * as Icons from "lucide-react";
 import { Login, Role, Signup } from "./pages/public/Auth";
-import { Public } from "./pages/public/Landing";
+import { CaseLookup, Public } from "./pages/public/Landing";
 import { Advocate } from "./pages/advocate/Dashboard";
 import { Authority } from "./pages/authority/Authority";
 
@@ -100,6 +100,7 @@ export default function App() {
     }
   });
   const [data, setData] = useState({ cases: [], hearings: [], courtrooms: [] });
+  const [cnrQuery, setCnrQuery] = useState("");
   const go = (s) => {
     if (s === "advocate" || s === "authority") setRole(s);
     setScreen(s);
@@ -123,8 +124,14 @@ export default function App() {
       <Public
         go={go}
         dashboard={localStorage.getItem("nyaya_token") ? role : ""}
+        onCaseSearch={(cnr) => {
+          setCnrQuery(cnr);
+          go("case-search");
+        }}
       />
     );
+  else if (screen === "case-search")
+    view = <CaseLookup initialQuery={cnrQuery} back={() => go("public")} />;
   else if (screen === "role") view = <Role go={go} />;
   else if (screen.startsWith("signup"))
     view = (
@@ -169,6 +176,7 @@ export function Workspace({ role, exit }) {
     .join("")
     .slice(0, 2)
     .toUpperCase();
+  const profileImage = localStorage.getItem(`nyaya_profile_image_${currentUser.id}`) || "";
   const nav = authority ? authorityNav : advocateNav;
   const [page, setPage] = useState("Dashboard");
   const [mobile, setMobile] = useState(false);
@@ -260,7 +268,7 @@ export function Workspace({ role, exit }) {
                 className="account-trigger"
                 onClick={() => setProfileMenu(!profileMenu)}
               >
-                <span className="avatar">{initials}</span>
+                <span className="avatar profile-photo">{profileImage ? <img src={profileImage} alt="Profile" /> : initials}</span>
                 <span className="user-name">
                   <b>{displayName}</b>
                   <small>{authority ? "Court Authority" : "Advocate"}</small>
@@ -315,6 +323,7 @@ export function CourtOtherHelper() {
         option.value = "Other";
         option.textContent = "Other â€” enter court name";
         select.append(option);
+        option.textContent = "Other - enter court name";
         const input = document.createElement("input");
         input.className = "other-court-input";
         input.placeholder = "Enter court name";
@@ -369,6 +378,7 @@ export function ProfileCourtHelper() {
         option.value = "Other";
         option.textContent = "Other â€” enter court name";
         select.append(option);
+        option.textContent = "Other - enter court name";
         const input = document.createElement("input");
         input.className = "other-court-input";
         input.placeholder = "Enter court name";
