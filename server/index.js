@@ -7,7 +7,7 @@ const { PrismaClient } = pkg;
 
 const prisma = new PrismaClient();
 const app = express();
-app.use(cors());
+app.use(cors({ origin: process.env.FRONTEND_URL || "http://localhost:5174" }));
 app.use(express.json());
 
 const hashPassword = (password) => {
@@ -758,4 +758,5 @@ app.post("/api/auth/logout/", requireAuth, async (req, res) => {
 
 app.get("/api/case-law/", (_req, res) => res.json([]));
 
-app.listen(3001, () => console.log("API running at http://localhost:3001"));
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, "0.0.0.0", () => { console.log(`Server running on port ${PORT}`); });
