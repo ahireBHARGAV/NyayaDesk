@@ -7,18 +7,28 @@ export function Cases({ setPage }) {
   const [filter, setFilter] = useState("All");
   const [adding, setAdding] = useState(false);
   const [message, setMessage] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
   const addCase = async (e) => {
     e.preventDefault();
+    setErrorMsg("");
     const body = Object.fromEntries(new FormData(e.currentTarget));
-    const res = await fetch("/api/cases/", {
+    const token = localStorage.getItem("nyaya_token");
+    const res = await fetch("/api/advocate/portfolio/cases", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
       body: JSON.stringify(body),
     });
+    
     if (res.ok) {
       await refresh();
       setAdding(false);
-      setMessage("New case added successfully.");
+      setMessage("Case added to portfolio successfully.");
+    } else {
+      const err = await res.json();
+      setErrorMsg(err.detail || "Failed to add case.");
     }
   };
   const remove = async (id) => {
@@ -55,33 +65,15 @@ export function Cases({ setPage }) {
       />
       {adding && (
         <section className="panel form inline-form">
-          <h2>Add a Case</h2>
+          <h2>Add Existing Case</h2>
+          <p className="text-secondary" style={{marginBottom: "1rem"}}>Enter the 16-character CNR number to add an existing official case to your portfolio.</p>
           <form onSubmit={addCase}>
             <label>
-              Case Number
-              <input name="id" required placeholder="LMN/2026" />
+              CNR Number
+              <input name="cnr" required placeholder="e.g. MHNS030080582025" />
             </label>
-            <label>
-              Case Title
-              <input name="title" required placeholder="Party A vs Party B" />
-            </label>
-            <label>
-              Case Type
-              <input name="type" required placeholder="Civil Appeal" />
-            </label>
-            <label>
-              Court
-              <input name="court" required defaultValue="High Court of Delhi" />
-            </label>
-            <label>
-              Judge
-              <input name="judge" required placeholder="Justice Name" />
-            </label>
-            <label>
-              Next Hearing
-              <input name="next" placeholder="15 Sep, 10:00 AM" />
-            </label>
-            <Button type="submit">Save Case</Button>
+            <Button type="submit">Add to Portfolio</Button>
+            {errorMsg && <p className="error" style={{color: "var(--danger)", marginTop: "1rem", display: "flex", gap: "0.5rem", alignItems: "center"}}><Icon name="AlertCircle" size={16} /> {errorMsg}</p>}
           </form>
         </section>
       )}
@@ -136,7 +128,7 @@ export function Cases({ setPage }) {
               <span>
                 <Button
                   variant="small secondary"
-                  onClick={() => setPage("Case Details")}
+                  onClick={() => { sessionStorage.setItem("nyaya_selected_case", c.id); setPage("Case Details"); }}
                 >
                   View
                 </Button>

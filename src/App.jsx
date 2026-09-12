@@ -88,7 +88,7 @@ export function PageTitle({ title, sub, action }) {
 }
 
 export default function App() {
-  const [screen, setScreen] = useState("public");
+  const [screen, setScreen] = useState(() => localStorage.getItem("nyaya_token") ? "workspace" : "public");
   const [role, setRole] = useState(() => {
     try {
       return (
@@ -105,16 +105,23 @@ export default function App() {
     if (s === "advocate" || s === "authority") setRole(s);
     setScreen(s);
   };
-  const refresh = () =>
-    Promise.all(
-      ["cases", "hearings", "courtrooms"].map((path) =>
-        fetch(`/api/${path}/`).then((res) => (res.ok ? res.json() : [])),
-      ),
+  const refresh = () => {
+    return Promise.all(
+      ["cases", "hearings", "courtrooms"].map((path) => {
+        let url = `/api/${path}/`;
+        if (role === "advocate" && (path === "cases" || path === "hearings")) {
+          url = `/api/advocate/portfolio/${path}`;
+        }
+        const token = localStorage.getItem("nyaya_token");
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        return fetch(url, { headers }).then((res) => (res.ok ? res.json() : []));
+      })
     )
       .then(([cases, hearings, courtrooms]) =>
         setData({ cases, hearings, courtrooms }),
       )
       .catch(() => setData({ cases: [], hearings: [], courtrooms: [] }));
+  };
   useEffect(() => {
     refresh();
   }, []);

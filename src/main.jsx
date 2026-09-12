@@ -2,7 +2,7 @@ import { createRoot } from "react-dom/client";
 import App, {
   CourtOtherHelper,
   DemoAuthHelper,
-  FrontendDummyData,
+  
   ProfileCourtHelper,
   ProfileLogoutHelper,
   ScheduleCaseNavigator,
@@ -12,8 +12,7 @@ import "./styles.css";
 
 createRoot(document.getElementById("root")).render(
   <>
-    <FrontendDummyData />
-    <CourtOtherHelper />
+        <CourtOtherHelper />
     <ScheduleCaseNavigator />
     <ProfileCourtHelper />
     <SidebarProfileName />

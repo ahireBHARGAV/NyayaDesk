@@ -7,45 +7,75 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model AdvocateCase {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  caseId        String
+  case          Case     @relation(fields: [caseId], references: [id])
+  role          String?  
+  internalNotes String?
+  addedAt       DateTime @default(now())
+
+  @@unique([userId, caseId])
+}
+
 model Case {
   id              String    @id @default(uuid())
-  externalCaseId  String?   @unique
+  cnrNumber       String?   @unique
   caseNumber      String?
   title           String
   type            String
   court           String
-  judge           String
-  nextHearingDate String?
+  judge           String?   
   status          String
-  source          String    @default("local")
+  source          String    @default("ecourts")
   lastSyncedAt    DateTime?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
   hearings        Hearing[]
+  advocateCases   AdvocateCase[]
+}
+
+model Judge {
+  id           String      @id @default(uuid())
+  name         String      @unique
+  courtrooms   Courtroom[]
+  hearings     Hearing[]
 }
 
 model Courtroom {
   id           String   @id @default(uuid())
   room         String   @unique
-  judge        String
+  judgeId      String?
+  judge        Judge?   @relation(fields: [judgeId], references: [id])
   status       String
   currentCase  String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  
+  hearings     Hearing[]
 }
 
 model Hearing {
-  id        String   @id @default(uuid())
-  caseId    String
-  case      Case     @relation(fields: [caseId], references: [id])
-  date      String
-  time      String
-  room      String
-  judge     String
-  status    String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(uuid())
+  caseId      String
+  case        Case     @relation(fields: [caseId], references: [id])
+  
+  courtroomId String?
+  courtroom   Courtroom? @relation(fields: [courtroomId], references: [id])
+  judgeId     String?
+  judge       Judge?     @relation(fields: [judgeId], references: [id])
+  
+  date        String
+  time        String?
+  room        String?    
+  judgeName   String?    
+  status      String
+  source      String     @default("ecourts")
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 }
 
 model Notification {
@@ -67,7 +97,8 @@ model User {
   passwordHash String?
   createdAt    DateTime  @default(now())
 
-  sessions     Session[]
+  sessions      Session[]
+  advocateCases AdvocateCase[]
 }
 
 model Session {

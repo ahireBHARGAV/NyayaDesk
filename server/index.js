@@ -44,91 +44,354 @@ app.get("/api/health/", (_req, res) =>
 // This route deliberately needs no session: a CNR lookup is available from the
 // public home page as well as from either signed-in workspace.
 const publicCase = (item) => ({
-  cnr: item.cnr || item.id,
-  caseType: item.caseType || "Not available",
-  caseStatus: item.caseStatus || "Not available",
-  filingNumber: item.filingNumber || "Not available",
-  filingDate: item.filingDate || null,
-  registrationNumber: item.registrationNumber || "Not available",
-  registrationDate: item.registrationDate || null,
-  firstHearingDate: item.firstHearingDate || null,
-  lastHearingDate: item.lastHearingDate || null,
-  nextHearingDate: item.nextHearingDate || item.decisionDate || null,
-  decisionDate: item.decisionDate || null,
-  courtName: item.courtName || "Not available",
-  courtCode: item.courtCode || "",
-  judges: item.judges || [],
-  petitioners: item.petitioners || [],
-  petitionerAdvocates: item.petitionerAdvocates || [],
-  respondents: item.respondents || [],
-  respondentAdvocates: item.respondentAdvocates || [],
-  act: item.caseCategory || "Not available",
-  hearingCount: item.hearingCount || 0,
-  hasOrders: Boolean(item.hasOrders),
-  hasJudgments: Boolean(item.hasJudgments),
+  cnr: item.cnrNumber || item.id,
+  caseType: item.type || "Not available",
+  caseStatus: item.status || "Not available",
+  filingNumber: "Not available",
+  filingDate: null,
+  registrationNumber: item.caseNumber || "Not available",
+  registrationDate: null,
+  firstHearingDate: null,
+  lastHearingDate: null,
+  nextHearingDate: (item.hearings && item.hearings.length > 0) ? item.hearings[0].date : null,
+  decisionDate: null,
+  courtName: item.court || "Not available",
+  courtCode: "",
+  judges: [item.judge].filter(Boolean),
+  petitioners: [],
+  petitionerAdvocates: [],
+  respondents: [],
+  respondentAdvocates: [],
+  act: "Not available",
+  hearingCount: item.hearings?.length || 0,
+  hasOrders: false,
+  hasJudgments: false,
 });
 
 app.get("/api/public/cases/search", async (req, res) => {
   const cnr = String(req.query.cnr || "").trim().toUpperCase();
   if (!cnr) return res.status(400).json({ detail: "Enter a CNR number." });
-  const data = await getMcpData();
-  const results = (data.results || [])
-    .filter((item) => String(item.cnr || item.id || "").toUpperCase().includes(cnr))
-    .map(publicCase);
+  const cases = await prisma.case.findMany({
+    where: { cnrNumber: { contains: cnr, mode: 'insensitive' } },
+    include: { hearings: { orderBy: { date: 'desc' }, take: 1 } }
+  });
+  const results = cases.map(publicCase);
   return res.json({ results });
 });
 
 app.get("/api/public/cases/:cnr", async (req, res) => {
   const cnr = decodeURIComponent(req.params.cnr).trim().toUpperCase();
-  const data = await getMcpData();
-  const item = (data.results || []).find(
-    (candidate) => String(candidate.cnr || candidate.id || "").toUpperCase() === cnr,
-  );
-  if (!item) return res.status(404).json({ detail: "No case found for this CNR number." });
-  return res.json(publicCase(item));
+  const c = await prisma.case.findUnique({
+    where: { cnrNumber: cnr },
+    include: { hearings: { orderBy: { date: 'desc' }, take: 1 } }
+  });
+  if (!c) return res.status(404).json({ detail: "No case found for this CNR number." });
+  return res.json(publicCase(c));
 });
 
-// ----- CASES -----
-app.get("/api/cases/", async (_req, res) => {
-  const cases = await prisma.case.findMany();
+// ----- ADVOCATE PORTFOLIO -----
+app.get("/api/advocate/portfolio/cases", requireAuth, async (req, res) => {
+  const advocateCases = await prisma.advocateCase.findMany({
+    where: { userId: req.user.id },
+    include: { 
+      case: { 
+        include: { hearings: { orderBy: { date: 'desc' }, take: 1 } } 
+      } 
+    }
+  });
+  res.json(advocateCases.map(ac => ({
+    id: ac.case.cnrNumber || ac.case.id,
+    title: ac.case.title,
+    type: ac.case.type,
+    court: ac.case.court,
+    judge: ac.case.judge,
+    next: ac.case.hearings?.[0]?.date || "Not scheduled",
+    status: ac.case.status,
+    addedAt: ac.addedAt,
+    internalNotes: ac.internalNotes
+  })));
+});
+
+app.post("/api/advocate/portfolio/cases", requireAuth, async (req, res) => {
+  const cnr = String(req.body.cnr || "").trim().toUpperCase();
+  if (!cnr) return res.status(400).json({ detail: "CNR number is required." });
+  
+  const c = await prisma.case.findUnique({ where: { cnrNumber: cnr } });
+  if (!c) return res.status(404).json({ detail: "Case not found in the current system." });
+  
+  try {
+    await prisma.advocateCase.create({
+      data: { userId: req.user.id, caseId: c.id }
+    });
+    return res.status(201).json({ detail: "Case added to portfolio." });
+  } catch (err) {
+    return res.status(400).json({ detail: "This case is already in your portfolio." });
+  }
+});
+
+app.get("/api/advocate/portfolio/hearings", requireAuth, async (req, res) => {
+  const advocateCases = await prisma.advocateCase.findMany({
+    where: { userId: req.user.id },
+    include: {
+      case: {
+        include: {
+          hearings: {
+            include: { courtroom: true, judge: true },
+            orderBy: { date: 'asc' }
+          }
+        }
+      }
+    }
+  });
+
+  const allHearings = advocateCases.flatMap(ac => ac.case.hearings);
+  // Sort all hearings chronologically
+  allHearings.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+  res.json(allHearings.map(h => ({
+    id: h.id,
+    date: h.date,
+    time: h.time,
+    case: h.case?.title || "Unknown Case",
+    room: h.courtroom?.room || h.room,
+    judge: h.judge?.name || h.judgeName,
+    status: h.status
+  })));
+});
+
+app.get("/api/advocate/portfolio/cases/:caseId", requireAuth, async (req, res) => {
+  const caseId = decodeURIComponent(req.params.caseId);
+  const ac = await prisma.advocateCase.findFirst({
+    where: { 
+      userId: req.user.id, 
+      case: { OR: [{ cnrNumber: caseId }, { id: caseId }] } 
+    },
+    include: { 
+      case: { 
+        include: { 
+          hearings: { orderBy: { date: 'desc' } },
+          advocateCases: { include: { user: true } }
+        } 
+      } 
+    }
+  });
+  
+  if (!ac) return res.status(404).json({ detail: "Case not found in your portfolio." });
+  
+  res.json({
+    id: ac.case.cnrNumber || ac.case.id,
+    title: ac.case.title,
+    type: ac.case.type,
+    court: ac.case.court,
+    judge: ac.case.judge,
+    next: ac.case.hearings?.[0]?.date || "Not scheduled",
+    status: ac.case.status,
+    internalNotes: ac.internalNotes,
+    addedAt: ac.addedAt,
+    partners: ac.case.advocateCases.map(partnerAc => ({
+      id: partnerAc.user.id,
+      name: partnerAc.user.name,
+      email: partnerAc.user.email,
+      role: partnerAc.role,
+      addedAt: partnerAc.addedAt
+    })),
+    hearings: ac.case.hearings
+  });
+});
+
+app.post("/api/advocate/portfolio/cases/:caseId/partners", requireAuth, async (req, res) => {
+  const caseId = decodeURIComponent(req.params.caseId);
+  const partnerId = req.body.partnerId;
+  if (!partnerId) return res.status(400).json({ detail: "partnerId is required." });
+  
+  const ac = await prisma.advocateCase.findFirst({
+    where: { userId: req.user.id, case: { OR: [{ cnrNumber: caseId }, { id: caseId }] } }
+  });
+  if (!ac) return res.status(403).json({ detail: "You don't have permission to add partners to this case." });
+  
+  try {
+    await prisma.advocateCase.create({
+      data: { userId: partnerId, caseId: ac.caseId }
+    });
+    return res.status(201).json({ detail: "Partner added successfully." });
+  } catch (err) {
+    return res.status(400).json({ detail: "This advocate is already a partner on this case." });
+  }
+});
+
+app.delete("/api/advocate/portfolio/cases/:caseId/partners/:advocateId", requireAuth, async (req, res) => {
+  const caseId = decodeURIComponent(req.params.caseId);
+  const advocateId = req.params.advocateId;
+  
+  const ac = await prisma.advocateCase.findFirst({
+    where: { userId: req.user.id, case: { OR: [{ cnrNumber: caseId }, { id: caseId }] } }
+  });
+  if (!ac) return res.status(403).json({ detail: "You don't have permission to remove partners from this case." });
+  
+  await prisma.advocateCase.deleteMany({
+    where: { userId: advocateId, caseId: ac.caseId }
+  });
+  return res.json({ detail: "Partner removed." });
+});
+
+// ----- AUTHORITY MIDDLEWARE -----
+const requireAuthority = [requireAuth, (req, res, next) => {
+  if (req.user.role !== 'AUTHORITY') return res.status(403).json({ detail: "Authority access required." });
+  next();
+}];
+
+// ----- AUTHORITY WORKFLOW -----
+app.get("/api/authority/dashboard", requireAuthority, async (req, res) => {
+  const totalCases = await prisma.case.count();
+  
+  const today = new Date().toISOString().split('T')[0]; // Simple string match for MVP
+  // In a real app we'd parse properly. MVP uses string comparison for 'date' field.
+  const todaysHearings = await prisma.hearing.count({
+    where: { date: today }
+  });
+  
+  const upcomingHearings = await prisma.hearing.count({
+    where: { date: { gt: today } }
+  });
+  
+  const totalCourtrooms = await prisma.courtroom.count();
+  const totalJudges = await prisma.judge.count();
+  
+  res.json({ totalCases, todaysHearings, upcomingHearings, totalCourtrooms, totalJudges });
+});
+
+app.get("/api/authority/cases", requireAuthority, async (req, res) => {
+  const cases = await prisma.case.findMany({
+    include: { hearings: { orderBy: { date: 'desc' }, take: 1 } }
+  });
   res.json(cases.map(c => ({
-    id: c.externalCaseId || c.id,
+    id: c.cnrNumber || c.id,
     title: c.title,
     type: c.type,
     court: c.court,
     judge: c.judge,
-    next: c.nextHearingDate,
+    next: c.hearings?.[0]?.date || "Not scheduled",
     status: c.status,
   })));
 });
 
-app.post("/api/cases/", async (req, res) => {
-  if (!req.body.id || !req.body.title)
-    return res.status(400).json({ detail: "Case number and title are required." });
-  
-  const newItem = await prisma.case.create({
-    data: {
-      externalCaseId: req.body.id,
-      caseNumber: req.body.id,
-      title: req.body.title,
-      type: req.body.type || 'Civil',
-      court: req.body.court || 'District Court',
-      judge: req.body.judge || 'Unassigned',
-      nextHearingDate: req.body.next || "Not scheduled",
-      status: "Active",
-      source: "local"
+app.get("/api/authority/cases/:caseId", requireAuthority, async (req, res) => {
+  const caseId = decodeURIComponent(req.params.caseId);
+  const c = await prisma.case.findFirst({
+    where: { OR: [{ cnrNumber: caseId }, { id: caseId }] },
+    include: { 
+      hearings: { 
+        orderBy: { date: 'desc' },
+        include: { courtroom: true, judge: true }
+      } 
     }
   });
   
-  return res.status(201).json({
-    id: newItem.externalCaseId || newItem.id,
-    title: newItem.title,
-    type: newItem.type,
-    court: newItem.court,
-    judge: newItem.judge,
-    next: newItem.nextHearingDate,
-    status: newItem.status,
+  if (!c) return res.status(404).json({ detail: "Case not found." });
+  
+  res.json({
+    id: c.cnrNumber || c.id,
+    caseNumber: c.caseNumber,
+    title: c.title,
+    type: c.type,
+    court: c.court,
+    judge: c.judge,
+    status: c.status,
+    hearings: c.hearings
   });
+});
+
+app.post("/api/authority/hearings", requireAuthority, async (req, res) => {
+  const { caseId, date, time, courtroomId, judgeId, status } = req.body;
+  if (!caseId || !date) return res.status(400).json({ detail: "Case ID and Date are required." });
+  
+  const c = await prisma.case.findFirst({ where: { OR: [{ cnrNumber: caseId }, { id: caseId }] } });
+  if (!c) return res.status(404).json({ detail: "Case not found." });
+  
+  // Create hearing without duplicating case
+  const h = await prisma.hearing.create({
+    data: {
+      caseId: c.id,
+      date,
+      time: time || "",
+      courtroomId: courtroomId || null,
+      judgeId: judgeId || null,
+      status: status || "Scheduled"
+    },
+    include: { courtroom: true, judge: true }
+  });
+  
+  // Optionally update case status/judge fields if required by legacy UI
+  if (judgeId) {
+    const j = await prisma.judge.findUnique({ where: { id: judgeId } });
+    if (j) {
+      await prisma.case.update({
+        where: { id: c.id },
+        data: { judge: j.name, status: "Hearing Scheduled" }
+      });
+    }
+  }
+  
+  res.status(201).json(h);
+});
+
+app.get("/api/authority/courtrooms", requireAuthority, async (req, res) => {
+  const courtrooms = await prisma.courtroom.findMany({
+    include: { judge: true }
+  });
+  res.json(courtrooms);
+});
+
+app.patch("/api/authority/courtrooms/:courtroomId", requireAuthority, async (req, res) => {
+  const { judgeId, status } = req.body;
+  const data = {};
+  if (judgeId !== undefined) data.judgeId = judgeId;
+  if (status !== undefined) data.status = status;
+  
+  const cr = await prisma.courtroom.update({
+    where: { id: req.params.courtroomId },
+    data,
+    include: { judge: true }
+  });
+  res.json(cr);
+});
+
+app.get("/api/authority/judges", requireAuthority, async (req, res) => {
+  const judges = await prisma.judge.findMany();
+  res.json(judges);
+});
+
+app.post("/api/authority/judges", requireAuthority, async (req, res) => {
+  if (!req.body.name) return res.status(400).json({ detail: "Name required" });
+  try {
+    const j = await prisma.judge.create({ data: { name: req.body.name } });
+    res.status(201).json(j);
+  } catch(e) {
+    res.status(400).json({ detail: "Judge already exists or invalid data" });
+  }
+});
+
+// ----- ADVOCATES -----
+app.get("/api/advocates", requireAuth, async (req, res) => {
+  const advocates = await prisma.user.findMany({
+    where: { role: "ADVOCATE", id: { not: req.user.id } },
+    select: { id: true, name: true, email: true }
+  });
+  res.json(advocates);
+});
+
+// ----- CASES (Fallback/Global for Authority if needed) -----
+app.get("/api/cases/", async (_req, res) => {
+  const cases = await prisma.case.findMany({ include: { hearings: { orderBy: { date: 'desc' }, take: 1 } } });
+  res.json(cases.map(c => ({
+    id: c.cnrNumber || c.id,
+    title: c.title,
+    type: c.type,
+    court: c.court,
+    judge: c.judge,
+    next: c.hearings?.[0]?.date || "Not scheduled",
+    status: c.status,
+  })));
 });
 
 app.get("/api/cases/search", async (req, res) => {
@@ -137,19 +400,20 @@ app.get("/api/cases/search", async (req, res) => {
     where: {
       OR: [
         { title: { contains: query, mode: 'insensitive' } },
-        { externalCaseId: { contains: query, mode: 'insensitive' } },
+        { cnrNumber: { contains: query, mode: 'insensitive' } },
         { court: { contains: query, mode: 'insensitive' } }
       ]
-    }
+    },
+    include: { hearings: { orderBy: { date: 'desc' }, take: 1 } }
   });
   
   res.json(cases.map(c => ({
-    id: c.externalCaseId || c.id,
+    id: c.cnrNumber || c.id,
     title: c.title,
     type: c.type,
     court: c.court,
     judge: c.judge,
-    next: c.nextHearingDate,
+    next: c.hearings?.[0]?.date || "Not scheduled",
     status: c.status,
   })));
 });
@@ -157,35 +421,21 @@ app.get("/api/cases/search", async (req, res) => {
 app.get("/api/cases/:id/", async (req, res) => {
   const id = decodeURIComponent(req.params.id);
   const c = await prisma.case.findFirst({
-    where: { OR: [{ externalCaseId: id }, { id: id }] }
+    where: { OR: [{ cnrNumber: id }, { id: id }] },
+    include: { hearings: { orderBy: { date: 'desc' }, take: 1 } }
   });
-  if (!c) return res.status(404).json({ detail: "Case not found" });
-  
-  return res.json({
-    id: c.externalCaseId || c.id,
+  if (!c) return res.status(404).json({ detail: "Not found" });
+  res.json({
+    id: c.cnrNumber || c.id,
     title: c.title,
     type: c.type,
     court: c.court,
     judge: c.judge,
-    next: c.nextHearingDate,
+    next: c.hearings?.[0]?.date || "Not scheduled",
     status: c.status,
   });
 });
 
-app.delete("/api/cases/:id/", async (req, res) => {
-  const id = decodeURIComponent(req.params.id);
-  const c = await prisma.case.findFirst({
-    where: { OR: [{ externalCaseId: id }, { id: id }] }
-  });
-  if (!c) return res.status(404).json({ detail: "Case not found" });
-  
-  await prisma.hearing.deleteMany({ where: { caseId: c.id } });
-  await prisma.case.delete({ where: { id: c.id } });
-  
-  return res.json({ id: c.externalCaseId || c.id, title: c.title });
-});
-
-// ----- HEARINGS -----
 app.get("/api/hearings/", async (_req, res) => {
   const hearings = await prisma.hearing.findMany({ include: { case: true } });
   res.json(hearings.map(h => ({

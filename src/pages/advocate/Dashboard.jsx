@@ -82,37 +82,51 @@ export function Advocate({ page, setPage, clear }) {
 }
 export function Timeline({ setPage }) {
   const { hearings } = useContext(DataContext);
+  
+  const todayStr = new Date().toISOString().split('T')[0];
+  const upcomingHearings = hearings.filter(h => h.date >= todayStr).slice(0, 5);
+
   return (
     <section className="panel">
       <div className="panel-title">
         <div>
           <h2>Today's Timeline</h2>
-          <p>Wednesday, 03 September</p>
+          <p>{new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
         </div>
-        <Button variant="text" onClick={() => setPage("Calendar")}>
-          Full calendar <Icon name="ArrowRight" size={15} />
-        </Button>
+        {upcomingHearings.length > 0 && (
+          <Button variant="text" onClick={() => setPage("Calendar")}>
+            Full calendar <Icon name="ArrowRight" size={15} />
+          </Button>
+        )}
       </div>
       <div className="timeline">
-        {hearings.map((h) => (
-          <button
-            className="timeline-row case-link"
-            onClick={() => openCaseDetails(setPage, h.case)}
-          >
-            <b>{h.time}</b>
-            <span className="line-dot"></span>
-            <div>
-              <h3>{h.case}</h3>
-              <p>{h.room} · {h.judge}</p>
-            </div>
-            <Badge>{h.status}</Badge>
-          </button>
-        ))}
+        {upcomingHearings.length > 0 ? (
+          upcomingHearings.map((h, i) => (
+            <button
+              key={i}
+              className="timeline-row case-link"
+              onClick={() => openCaseDetails(setPage, h.case)}
+            >
+              <b>{h.time}</b>
+              <span className="line-dot"></span>
+              <div>
+                <h3>{h.case}</h3>
+                <p>{h.room} · {h.judgeName || h.judge}</p>
+              </div>
+              <Badge>{h.status}</Badge>
+            </button>
+          ))
+        ) : (
+          <div style={{ padding: "2rem", textAlign: "center", color: "var(--text-light)" }}>
+            <p>No hearings scheduled for today.</p>
+          </div>
+        )}
       </div>
     </section>
   );
 }
 export function Activities({ setPage }) {
+  const { cases } = useContext(DataContext);
   return (
     <section className="panel">
       <div className="panel-title">
@@ -122,13 +136,14 @@ export function Activities({ setPage }) {
         </div>
       </div>
       {[
-        ["HIGH", "Reply Filing", "ABC vs XYZ", "Due Today"],
-        ["MEDIUM", "Document Submission", "DEF vs GHI", "Due Tomorrow"],
-        ["LOW", "Hearing Preparation", "JKL vs MNO", "Due 12 September"],
-      ].map((x) => (
+        ["HIGH", "Reply Filing", cases[0]?.title || "Pending Document", "Due Today", cases[0]?.id],
+        ["MEDIUM", "Document Submission", cases[1]?.title || "Pending Document", "Due Tomorrow", cases[1]?.id],
+        ["LOW", "Hearing Preparation", cases[2]?.title || "Pending Document", "Due 12 September", cases[2]?.id],
+      ].filter(x => x[4]).map((x) => (
         <button
+          key={x[4]}
           className="activity case-link"
-          onClick={() => openCaseDetails(setPage, x[2])}
+          onClick={() => openCaseDetails(setPage, x[4])}
         >
           <Badge>{x[0]}</Badge>
           <div>
@@ -138,6 +153,7 @@ export function Activities({ setPage }) {
           <small>{x[3]}</small>
         </button>
       ))}
+      {cases.length === 0 && <p style={{padding: '1rem', color: '#666'}}>No pending activities.</p>}
     </section>
   );
 }

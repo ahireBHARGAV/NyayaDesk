@@ -1,93 +1,67 @@
-import { useContext, useEffect, useState } from "react";
-import {
-  Badge,
-  Button,
-  DataContext,
-  Icon,
-  PageTitle,
-  getTodayKey,
-} from "../../App";
+import { useState, useEffect } from "react";
+import { Badge, Button, PageTitle } from "../../App";
 
-export function Courtrooms({ compact = false, setPage }) {
-  const { courtrooms, refresh } = useContext(DataContext);
-  const [rooms, setRooms] = useState([]);
-  const [filter, setFilter] = useState("All");
-  const [date, setDate] = useState(getTodayKey);
-  const [toast, setToast] = useState("");
-  useEffect(() => setRooms(courtrooms), [courtrooms]);
-  const shown = rooms.filter((x) => filter === "All" || x.status === filter);
-  const replace = (room) => {
-    sessionStorage.setItem("nyaya_replacement_room", room.room);
-    setPage?.("Replacement Assignment");
+export function Courtrooms() {
+  const [courtrooms, setCourtrooms] = useState([]);
+  const [judges, setJudges] = useState([]);
+
+  const refresh = async () => {
+    const token = localStorage.getItem("nyaya_token");
+    const headers = { Authorization: `Bearer ${token}` };
+    
+    const crs = await fetch('/api/authority/courtrooms', { headers });
+    if (crs.ok) setCourtrooms(await crs.json());
+    
+    const js = await fetch('/api/authority/judges', { headers });
+    if (js.ok) setJudges(await js.json());
   };
+
+  useEffect(() => { refresh(); }, []);
+
+  const updateCourtroom = async (id, data) => {
+    const token = localStorage.getItem("nyaya_token");
+    await fetch(`/api/authority/courtrooms/${id}`, {
+      method: 'PATCH',
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify(data)
+    });
+    refresh();
+  };
+
   return (
-    <section className="panel">
-      <div className="panel-title">
-        <div>
-          <h2>{compact ? "Today's Courtrooms" : "Courtroom Management"}</h2>
-          <p>
-            {compact
-              ? "Current judge and case allocation."
-              : `Schedule for ${new Date(`${date}T12:00:00`).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}.`}
-          </p>
-        </div>
-        {!compact && (
-          <label className="date-filter">
-            Date
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-            />
-          </label>
-        )}
-      </div>
-      {!compact && (
-        <div className="filter-tabs">
-          {["All", "Present", "Absent", "Updated"].map((x) => (
-            <button
-              className={filter === x ? "selected" : ""}
-              onClick={() => setFilter(x)}
-            >
-              {x}
-            </button>
+    <>
+      <PageTitle title="Courtroom Management" sub="Manage physical courtroom resources" />
+      <section className="panel">
+        <div className="data-table">
+          <div className="tr th">
+            <span>Room</span>
+            <span>Status</span>
+            <span>Assigned Judge</span>
+            <span>Actions</span>
+          </div>
+          {courtrooms.map(c => (
+            <div className="tr" key={c.id}>
+              <b>{c.room}</b>
+              <Badge>{c.status}</Badge>
+              <span>
+                <select 
+                  value={c.judgeId || ""} 
+                  onChange={e => updateCourtroom(c.id, { judgeId: e.target.value || null })}
+                  style={{padding: '0.25rem', border: '1px solid #ddd', borderRadius: '4px'}}
+                >
+                  <option value="">Unassigned</option>
+                  {judges.map(j => <option key={j.id} value={j.id}>{j.name}</option>)}
+                </select>
+              </span>
+              <span>
+                <Button variant="small secondary" onClick={() => updateCourtroom(c.id, { status: c.status === 'Available' ? 'Unavailable' : 'Available' })}>
+                  Toggle Status
+                </Button>
+              </span>
+            </div>
           ))}
         </div>
-      )}
-      <div className="data-table courtroom-table">
-        <div className="tr th">
-          <span>Courtroom</span>
-          <span>Judge</span>
-          <span>Status</span>
-          <span>Current / Next Case</span>
-          {!compact && <span>Action</span>}
-        </div>
-        {shown.map((r) => (
-          <div className="tr">
-            <b>{r.room}</b>
-            <span>{r.judge}</span>
-            <Badge>{r.status}</Badge>
-            <strong>{r.current}</strong>
-            {!compact && (
-              <span>
-                {r.status === "Absent" ? (
-                  <Button variant="small" onClick={() => replace(r)}>
-                    Assign Replacement
-                  </Button>
-                ) : (
-                  <button className="link-btn">View schedule</button>
-                )}
-              </span>
-            )}
-          </div>
-        ))}
-      </div>
-      {toast && (
-        <p className="success">
-          <Icon name="CheckCircle2" /> {toast}{" "}
-          <button onClick={() => setToast("")}>Ãƒâ€”</button>
-        </p>
-      )}
-    </section>
+      </section>
+    </>
   );
 }

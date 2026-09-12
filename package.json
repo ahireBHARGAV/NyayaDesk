@@ -19,6 +19,7 @@
     "eventsource": "^5.1.1",
     "express": "latest",
     "lucide-react": "latest",
+    "pg": "^8.23.0",
     "react": "latest",
     "react-dom": "latest",
     "vite": "latest"

@@ -1,50 +1,46 @@
-import { Button, Icon, PageTitle, Stat } from "../../App";
-import { ActivityLog } from "./ActivityLog";
-import { Courtrooms } from "./Courtrooms";
-import { JudgePresence } from "./JudgeAllocation";
+import { useState, useEffect } from "react";
+import { Icon, PageTitle } from "../../App";
 
 export function Dashboard({ setPage }) {
+  const [stats, setStats] = useState({ totalCases: 0, todaysHearings: 0, upcomingHearings: 0, totalCourtrooms: 0, totalJudges: 0 });
+
+  useEffect(() => {
+    const token = localStorage.getItem("nyaya_token");
+    fetch("/api/authority/dashboard", { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json())
+      .then(setStats)
+      .catch(console.error);
+  }, []);
+
   return (
     <>
-      <PageTitle
-        title="Courtroom Management"
-        sub="Manage today's courtroom and judge schedule."
-        action={
-          <Button onClick={() => setPage("Judge Allocation")}>
-            <Icon name="Plus" /> Assign judge
-          </Button>
-        }
-      />
-      <div className="stat-grid">
-        <Stat
-          icon="Landmark"
-          value="12"
-          label="Today's Courtrooms"
-          sub="4 active now"
-        />
-        <Stat
-          icon="UserCheck"
-          value="10"
-          label="Judges Present"
-          sub="2 unavailable"
-        />
-        <Stat
-          icon="Gavel"
-          value="8"
-          label="Ongoing Hearings"
-          sub="Updated live"
-        />
-        <Stat
-          icon="RefreshCw"
-          value="3"
-          label="Schedule Updates"
-          sub="Require review"
-        />
-      </div>
-      <Courtrooms compact />
-      <div className="two-col">
-        <JudgePresence setPage={setPage} />
-        <ActivityLog compact />
+      <PageTitle title="Authority Dashboard" sub="Overview of court operations and resources" />
+      <div className="grid">
+        <div className="card">
+          <Icon name="Briefcase" size={32} />
+          <div className="value">{stats.totalCases}</div>
+          <div className="label">Total Cases</div>
+        </div>
+        <div className="card">
+          <Icon name="Calendar" size={32} />
+          <div className="value">{stats.todaysHearings}</div>
+          <div className="label">Today's Hearings</div>
+        </div>
+        <div className="card">
+          <Icon name="CalendarRange" size={32} />
+          <div className="value">{stats.upcomingHearings}</div>
+          <div className="label">Upcoming Hearings</div>
+        </div>
+        <div className="card">
+          <Icon name="Landmark" size={32} />
+          <div className="value">{stats.totalCourtrooms}</div>
+          <div className="label">Courtrooms</div>
+        </div>
+        <div className="card">
+          <Icon name="UserRoundCog" size={32} />
+          <div className="value">{stats.totalJudges}</div>
+          <div className="label">Judges</div>
+        </div>
       </div>
     </>
   );

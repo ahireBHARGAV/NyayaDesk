@@ -1,22 +1,16 @@
-import { Notifications } from "../advocate/Notifications";
-import { Profile } from "../advocate/Profile";
-import { ActivityLog } from "./ActivityLog";
-import { CaseAllocation } from "./CaseAllocation";
-import { CourtSchedule } from "./CourtSchedule";
-import { Courtrooms } from "./Courtrooms";
 import { Dashboard } from "./Dashboard";
-import { JudgeAllocation, ReplacementAssignment } from "./JudgeAllocation";
+import { Cases } from "./Cases";
+import { CaseDetail } from "./CaseDetail";
+import { Hearings } from "./Hearings";
+import { Courtrooms } from "./Courtrooms";
+import { Judges } from "./Judges";
 
 export function Authority({ page, setPage, clear }) {
   if (page === "Dashboard") return <Dashboard setPage={setPage} />;
-  if (page === "Courtroom Management") return <Courtrooms setPage={setPage} />;
-  if (page === "Judge Allocation") return <JudgeAllocation setPage={setPage} />;
-  if (page === "Replacement Assignment")
-    return <ReplacementAssignment setPage={setPage} />;
-  if (page === "Case Allocation") return <CaseAllocation setPage={setPage} />;
-  if (page === "Court Schedule") return <CourtSchedule />;
-  if (page === "Notifications")
-    return <Notifications clear={clear} authority />;
-  if (page === "Activity Log") return <ActivityLog />;
-  return <Profile authority />;
+  if (page === "Cases") return <Cases setPage={setPage} />;
+  if (page === "Case Details") return <CaseDetail setPage={setPage} />;
+  if (page === "Hearings") return <Hearings setPage={setPage} />;
+  if (page === "Courtrooms") return <Courtrooms setPage={setPage} />;
+  if (page === "Judges") return <Judges setPage={setPage} />;
+  return <Dashboard setPage={setPage} />;
 }
