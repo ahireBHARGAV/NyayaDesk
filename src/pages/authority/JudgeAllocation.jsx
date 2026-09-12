@@ -55,7 +55,7 @@ export function JudgeAllocation({ setPage, replacement = false }) {
   const [time, setTime] = useState("09:30");
   const save = async () => {
     const assignment = { judge, courtroom, date, time };
-    const res = await fetch("/api/assignments/", {
+    const res = await fetch((import.meta.env.VITE_API_URL || "") + "/api/assignments/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(assignment),

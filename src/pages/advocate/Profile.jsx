@@ -52,7 +52,7 @@ export function Profile({ authority }) {
     if (password && !currentPassword)
       return setError("Enter your current password to set a new password.");
     const token = localStorage.getItem("nyaya_token");
-    const res = await fetch("/api/auth/profile/", {
+    const res = await fetch((import.meta.env.VITE_API_URL || "") + "/api/auth/profile/", {
       method: "PUT",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({ ...profile, password: password || undefined, currentPassword: currentPassword || undefined }),

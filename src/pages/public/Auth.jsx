@@ -57,7 +57,7 @@ export function Login({ role, go }) {
   const signIn = async (e) => {
     e.preventDefault();
     const form = Object.fromEntries(new FormData(e.currentTarget));
-    const res = await fetch("/api/auth/login/", {
+    const res = await fetch((import.meta.env.VITE_API_URL || "") + "/api/auth/login/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -134,14 +134,14 @@ export function Signup({ role, go }) {
     const form = Object.fromEntries(new FormData(e.currentTarget));
     const photo = form.profileImage;
     delete form.profileImage;
-    const signup = await fetch("/api/auth/signup/", {
+    const signup = await fetch((import.meta.env.VITE_API_URL || "") + "/api/auth/signup/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...form, role }),
     });
     const signupBody = await signup.json();
     if (!signup.ok) return setMessage(signupBody.detail);
-    const login = await fetch("/api/auth/login/", {
+    const login = await fetch((import.meta.env.VITE_API_URL || "") + "/api/auth/login/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

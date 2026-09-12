@@ -7,7 +7,7 @@ export function Judges() {
 
   const refresh = async () => {
     const token = localStorage.getItem("nyaya_token");
-    const res = await fetch('/api/authority/judges', { headers: { Authorization: `Bearer ${token}` } });
+    const res = await fetch((import.meta.env.VITE_API_URL || "") + '/api/authority/judges', { headers: { Authorization: `Bearer ${token}` } });
     if (res.ok) setJudges(await res.json());
   };
 
@@ -17,7 +17,7 @@ export function Judges() {
     e.preventDefault();
     if (!name) return;
     const token = localStorage.getItem("nyaya_token");
-    await fetch('/api/authority/judges', {
+    await fetch((import.meta.env.VITE_API_URL || "") + '/api/authority/judges', {
       method: 'POST',
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({ name })

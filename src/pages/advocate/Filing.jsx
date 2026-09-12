@@ -4,7 +4,7 @@ import { Badge, Button, Icon, PageTitle } from "../../App";
 export function Filing() {
   const [status, setStatus] = useState("Draft");
   const submit = async () => {
-    await fetch("/api/filings/", {
+    await fetch((import.meta.env.VITE_API_URL || "") + "/api/filings/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

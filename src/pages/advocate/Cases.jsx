@@ -13,7 +13,7 @@ export function Cases({ setPage }) {
     setErrorMsg("");
     const body = Object.fromEntries(new FormData(e.currentTarget));
     const token = localStorage.getItem("nyaya_token");
-    const res = await fetch("/api/advocate/portfolio/cases", {
+    const res = await fetch((import.meta.env.VITE_API_URL || "") + "/api/advocate/portfolio/cases", {
       method: "POST",
       headers: { 
         "Content-Type": "application/json",
@@ -33,7 +33,7 @@ export function Cases({ setPage }) {
   };
   const remove = async (id) => {
     if (!window.confirm(`Delete case ${id}? This cannot be undone.`)) return;
-    const res = await fetch(`/api/cases/${encodeURIComponent(id)}/`, {
+    const res = await fetch((import.meta.env.VITE_API_URL || "") + `/api/cases/${encodeURIComponent(id)}/`, {
       method: "DELETE",
     });
     if (res.ok) {

@@ -35,7 +35,7 @@ export function Public({ go, dashboard, onCaseSearch }) {
   const profileImage = localStorage.getItem(`nyaya_profile_image_${user.id}`) || "";
   const signOut = async () => {
     const token = localStorage.getItem("nyaya_token");
-    if (token) await fetch("/api/auth/logout/", { method: "POST", headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
+    if (token) await fetch((import.meta.env.VITE_API_URL || "") + "/api/auth/logout/", { method: "POST", headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
     localStorage.removeItem("nyaya_token");
     localStorage.removeItem("nyaya_user");
     window.location.reload();
@@ -291,7 +291,7 @@ export function CaseLookup({ initialQuery, back }) {
     if (!cnr) return;
     setLoading(true); setError(""); setSelected(null); setActiveHearing(null);
     try {
-      const response = await fetch(`/api/public/cases/search?cnr=${encodeURIComponent(cnr)}`);
+      const response = await fetch((import.meta.env.VITE_API_URL || "") + `/api/public/cases/search?cnr=${encodeURIComponent(cnr)}`);
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.detail || "Could not search cases.");
       setResults(payload.results || []);

@@ -7,7 +7,7 @@ export function Cases({ setPage }) {
 
   useEffect(() => {
     const token = localStorage.getItem("nyaya_token");
-    fetch("/api/authority/cases", { headers: { Authorization: `Bearer ${token}` } })
+    fetch((import.meta.env.VITE_API_URL || "") + "/api/authority/cases", { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.json())
       .then(setCases)
       .catch(console.error);

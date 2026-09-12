@@ -14,13 +14,13 @@ export function CaseDetail({ setPage }) {
     const headers = { Authorization: `Bearer ${token}` };
     
     try {
-      const res = await fetch(`/api/authority/cases/${encodeURIComponent(selected)}`, { headers });
+      const res = await fetch((import.meta.env.VITE_API_URL || "") + `/api/authority/cases/${encodeURIComponent(selected)}`, { headers });
       if (res.ok) setItem(await res.json());
       
-      const crs = await fetch('/api/authority/courtrooms', { headers });
+      const crs = await fetch((import.meta.env.VITE_API_URL || "") + '/api/authority/courtrooms', { headers });
       if (crs.ok) setCourtrooms(await crs.json());
       
-      const js = await fetch('/api/authority/judges', { headers });
+      const js = await fetch((import.meta.env.VITE_API_URL || "") + '/api/authority/judges', { headers });
       if (js.ok) setJudges(await js.json());
     } catch(e) { console.error(e); }
   };
@@ -40,7 +40,7 @@ export function CaseDetail({ setPage }) {
     };
     
     const token = localStorage.getItem("nyaya_token");
-    const res = await fetch("/api/authority/hearings", {
+    const res = await fetch((import.meta.env.VITE_API_URL || "") + "/api/authority/hearings", {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
       body: JSON.stringify(data)

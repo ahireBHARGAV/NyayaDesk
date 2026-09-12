@@ -13,7 +13,7 @@ export function CaseAllocation({ setPage }) {
   const update = (key, value) => setForm({ ...form, [key]: value });
   const save = async () => {
     const assignment = { ...form, status: "Scheduled" };
-    const res = await fetch("/api/assignments/", {
+    const res = await fetch((import.meta.env.VITE_API_URL || "") + "/api/assignments/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(assignment),

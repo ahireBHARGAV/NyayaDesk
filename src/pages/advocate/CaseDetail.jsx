@@ -21,14 +21,14 @@ export function CaseDetail({ setPage }) {
     const headers = { Authorization: `Bearer ${token}` };
     
     try {
-      const res = await fetch(`/api/advocate/portfolio/cases/${encodeURIComponent(selected)}`, { headers });
+      const res = await fetch((import.meta.env.VITE_API_URL || "") + `/api/advocate/portfolio/cases/${encodeURIComponent(selected)}`, { headers });
       if (res.ok) {
         setItem(await res.json());
       } else {
         setLoadingError(true);
       }
       
-      const advRes = await fetch('/api/advocates', { headers });
+      const advRes = await fetch((import.meta.env.VITE_API_URL || "") + '/api/advocates', { headers });
       if (advRes.ok) {
         setAdvocates(await advRes.json());
       }
@@ -48,7 +48,7 @@ export function CaseDetail({ setPage }) {
     if (!partnerId) return;
     
     const token = localStorage.getItem("nyaya_token");
-    const res = await fetch(`/api/advocate/portfolio/cases/${encodeURIComponent(selected)}/partners`, {
+    const res = await fetch((import.meta.env.VITE_API_URL || "") + `/api/advocate/portfolio/cases/${encodeURIComponent(selected)}/partners`, {
       method: "POST",
       headers: { 
         "Content-Type": "application/json",

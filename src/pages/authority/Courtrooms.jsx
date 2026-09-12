@@ -9,10 +9,10 @@ export function Courtrooms() {
     const token = localStorage.getItem("nyaya_token");
     const headers = { Authorization: `Bearer ${token}` };
     
-    const crs = await fetch('/api/authority/courtrooms', { headers });
+    const crs = await fetch((import.meta.env.VITE_API_URL || "") + '/api/authority/courtrooms', { headers });
     if (crs.ok) setCourtrooms(await crs.json());
     
-    const js = await fetch('/api/authority/judges', { headers });
+    const js = await fetch((import.meta.env.VITE_API_URL || "") + '/api/authority/judges', { headers });
     if (js.ok) setJudges(await js.json());
   };
 
@@ -20,7 +20,7 @@ export function Courtrooms() {
 
   const updateCourtroom = async (id, data) => {
     const token = localStorage.getItem("nyaya_token");
-    await fetch(`/api/authority/courtrooms/${id}`, {
+    await fetch((import.meta.env.VITE_API_URL || "") + `/api/authority/courtrooms/${id}`, {
       method: 'PATCH',
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify(data)
