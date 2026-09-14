@@ -66,8 +66,13 @@ export function Login({ role, go }) {
         role,
       }),
     });
-    const body = await res.json();
-    if (!res.ok) return setMessage(body.detail);
+    let body;
+    try {
+      body = await res.json();
+    } catch {
+      return setMessage("Server error. Please try again.");
+    }
+    if (!res.ok) return setMessage(body?.detail || "Login failed.");
     localStorage.setItem("nyaya_token", body.token);
     localStorage.setItem("nyaya_user", JSON.stringify(body.user));
     go(authority ? "authority" : "advocate");
@@ -139,8 +144,13 @@ export function Signup({ role, go }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...form, role }),
     });
-    const signupBody = await signup.json();
-    if (!signup.ok) return setMessage(signupBody.detail);
+    let signupBody;
+    try {
+      signupBody = await signup.json();
+    } catch {
+      return setMessage("Server error. Please try again.");
+    }
+    if (!signup.ok) return setMessage(signupBody?.detail || "Signup failed.");
     const login = await fetch((import.meta.env.VITE_API_URL || "") + "/api/auth/login/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -150,9 +160,13 @@ export function Signup({ role, go }) {
         role,
       }),
     });
-    const loginBody = await login.json();
-    if (!login.ok)
-      return setMessage(loginBody.detail || "Account created. Please sign in.");
+    let loginBody;
+    try {
+      loginBody = await login.json();
+    } catch {
+      return setMessage("Account created, but automatic sign in failed.");
+    }
+    if (!login.ok) return setMessage(loginBody?.detail || "Account created. Please sign in.");
     localStorage.setItem("nyaya_token", loginBody.token);
     localStorage.setItem("nyaya_user", JSON.stringify(loginBody.user));
     if (photo?.size) {
