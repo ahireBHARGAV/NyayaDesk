@@ -192,11 +192,14 @@ export function Workspace({ role, exit }) {
   const logout = async () => {
     if (!window.confirm("Do you want to log out?")) return;
     const token = localStorage.getItem("nyaya_token");
-    if (token)
-      await fetch((import.meta.env.VITE_API_URL || "") + "/api/auth/logout/", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+    if (token) {
+      try {
+        await fetch((import.meta.env.VITE_API_URL || "") + "/api/auth/logout/", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      } catch (e) {}
+    }
     localStorage.removeItem("nyaya_token");
     localStorage.removeItem("nyaya_user");
     exit();

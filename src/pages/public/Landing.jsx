@@ -35,7 +35,11 @@ export function Public({ go, dashboard, onCaseSearch }) {
   const profileImage = localStorage.getItem(`nyaya_profile_image_${user.id}`) || "";
   const signOut = async () => {
     const token = localStorage.getItem("nyaya_token");
-    if (token) await fetch((import.meta.env.VITE_API_URL || "") + "/api/auth/logout/", { method: "POST", headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
+    if (token) {
+      try {
+        await fetch((import.meta.env.VITE_API_URL || "") + "/api/auth/logout/", { method: "POST", headers: { Authorization: `Bearer ${token}` } });
+      } catch (e) {}
+    }
     localStorage.removeItem("nyaya_token");
     localStorage.removeItem("nyaya_user");
     window.location.reload();
