@@ -114,7 +114,7 @@ export default function App() {
         }
         const token = localStorage.getItem("nyaya_token");
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
-        return fetch(url, { headers }).then((res) => (res.ok ? res.json() : []));
+        return fetch((import.meta.env.VITE_API_URL || "") + url, { headers }).then((res) => (res.ok ? res.json() : []));
       })
     )
       .then(([cases, hearings, courtrooms]) =>
