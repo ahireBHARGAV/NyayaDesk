@@ -682,7 +682,9 @@ app.post("/api/auth/signup/", async (req, res) => {
   if (existing) return res.status(409).json({ detail: "An account with this email already exists." });
   
   const { password, ...details } = req.body;
-  const user = await prisma.user.create({
+  let user;
+  try {
+    user = await prisma.user.create({
     data: {
       id: details.id,
       name: details.name,
@@ -693,6 +695,12 @@ app.post("/api/auth/signup/", async (req, res) => {
       designation: details.designation
     }
   });
+  } catch (err) {
+    if (err.code === "P2002") {
+      return res.status(409).json({ detail: "An account with this Advocate/Authority ID already exists." });
+    }
+    return res.status(500).json({ detail: "Internal server error during account creation." });
+  }
   
   return res.status(201).json({ userId: user.id, name: user.name, role: user.role, email: user.email });
 });
