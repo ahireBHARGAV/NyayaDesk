@@ -19,6 +19,7 @@ import { Notifications } from "./Notifications";
 import { Profile } from "./Profile";
 
 export function Advocate({ page, setPage, clear }) {
+  const { cases, hearings } = useContext(DataContext);
   const user = (() => {
     try {
       return JSON.parse(localStorage.getItem("nyaya_user")) || {};
@@ -29,6 +30,10 @@ export function Advocate({ page, setPage, clear }) {
   const name = user.name
     ? `Adv. ${user.name.replace(/^Adv\.\s*/, "")}`
     : "Adv. Arjun Rao";
+
+  const activeCases = cases.length;
+  const todayStr = new Date().toISOString().split('T')[0];
+  const todayHearings = hearings.filter(h => h.date === todayStr).length;
   if (page === "Dashboard")
     return (
       <>
@@ -39,25 +44,25 @@ export function Advocate({ page, setPage, clear }) {
         <div className="stat-grid">
           <Stat
             icon="BriefcaseBusiness"
-            value="24"
+            value={activeCases.toString()}
             label="My Cases"
             sub="Active cases"
           />
           <Stat
             icon="CalendarDays"
-            value="4"
+            value={todayHearings.toString()}
             label="Today's Hearings"
-            sub="Across 3 courtrooms"
+            sub={todayHearings > 0 ? "Scheduled for today" : "No hearings today"}
           />
           <Stat
             icon="ListTodo"
-            value="7"
+            value="0"
             label="Pending Activities"
-            sub="2 due today"
+            sub="0 due today"
           />
           <Stat
             icon="AlarmClock"
-            value="3"
+            value="0"
             label="Upcoming Deadlines"
             sub="Next 7 days"
           />
