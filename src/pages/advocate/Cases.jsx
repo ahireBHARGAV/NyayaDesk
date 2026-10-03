@@ -101,6 +101,7 @@ export function Cases({ setPage }) {
             {["All", "Active", "Pending", "Closed", "Upcoming Hearing"].map(
               (f) => (
                 <button
+                  key={f}
                   className={filter === f ? "selected" : ""}
                   onClick={() => setFilter(f)}
                 >
@@ -122,7 +123,7 @@ export function Cases({ setPage }) {
             <span></span>
           </div>
           {result.map((c) => (
-            <div className="tr">
+            <div className="tr" key={c.id}>
               <b>{c.id}</b>
               <strong>{c.title}</strong>
               <span>{c.type}</span>

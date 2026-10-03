@@ -174,8 +174,8 @@ export function Quick({ setPage }) {
     <section>
       <h2 className="section-h">Quick Actions</h2>
       <div className="quick">
-        {x.map((a) => (
-          <button onClick={() => setPage(a[2])}>
+        {x.map((a, i) => (
+          <button key={i} onClick={() => setPage(a[2])}>
             <Icon name={a[0]} />
             <span>{a[1]}</span>
           </button>
