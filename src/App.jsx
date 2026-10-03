@@ -55,9 +55,6 @@ export const advocateNav = [
 export const authorityNav = [
   ["LayoutDashboard", "Dashboard"],
   ["Landmark", "Courtroom Management"],
-  ["UserRoundCog", "Judge Allocation"],
-  ["ListPlus", "Case Allocation"],
-  ["CalendarRange", "Court Schedule"],
   ["Bell", "Notifications"],
   ["ClipboardList", "Activity Log"],
 ];
@@ -136,10 +133,16 @@ export default function App() {
           setCnrQuery(cnr);
           go("case-search");
         }}
+        onCourtroomSearch={(q) => {
+          setCourtroomQuery(q);
+          go("courtroom-search");
+        }}
       />
     );
   else if (screen === "case-search")
     view = <CaseLookup initialQuery={cnrQuery} back={() => go("public")} />;
+  else if (screen === "courtroom-search")
+    view = <CourtroomLocator initialQuery={courtroomQuery} back={() => go("public")} />;
   else if (screen === "role") view = <Role go={go} />;
   else if (screen.startsWith("signup"))
     view = (

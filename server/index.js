@@ -36,6 +36,27 @@ const requireAuth = async (req, res, next) => {
   return next();
 };
 
+
+app.get("/api/seed", async (req, res) => {
+  const rooms = [
+    { room: "Courtroom 1 (Ground Floor)", status: "Available" },
+    { room: "Courtroom 2 (Ground Floor)", status: "Available" },
+    { room: "Courtroom 3 (First Floor)", status: "Available" },
+    { room: "Courtroom 4 (First Floor)", status: "Available" }
+  ];
+  for (let r of rooms) {
+    const exists = await prisma.courtroom.findUnique({ where: { room: r.room } });
+    if (!exists) await prisma.courtroom.create({ data: r });
+  }
+
+  const judges = ["Justice A. Mehra", "Justice B. Rao", "Justice C. Shah", "Justice D. Sen"];
+  for (let j of judges) {
+    const exists = await prisma.judge.findUnique({ where: { name: j } });
+    if (!exists) await prisma.judge.create({ data: { name: j } });
+  }
+  res.json({ success: true });
+});
+
 app.get("/api/health/", (_req, res) =>
   res.json({ status: "ok", mode: "prisma-neon" }),
 );

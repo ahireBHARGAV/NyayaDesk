@@ -12,7 +12,7 @@ import { Profile } from "../advocate/Profile";
 
 export function Authority({ page, setPage, clear }) {
   if (page === "Dashboard") return <Dashboard setPage={setPage} />;
-  if (page === "Courtroom Management") return <Courtrooms setPage={setPage} />;
+  if (page === "Courtroom Management") return <CourtSchedule setPage={setPage} />;
   if (page === "Judge Allocation") return <JudgeAllocation setPage={setPage} />;
   if (page === "Case Allocation") return <CaseAllocation setPage={setPage} />;
   if (page === "Court Schedule") return <CourtSchedule setPage={setPage} />;
