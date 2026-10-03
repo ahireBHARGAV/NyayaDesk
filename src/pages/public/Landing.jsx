@@ -498,12 +498,12 @@ const MOCK_FLOORS = [
       { name: "Courtroom 4", judge: "Justice D. Sen", time: "13:00 AM", casesCount: 2, cases: [] }
     ]
   },
-  { name: "First Floor", courtrooms: Array(5).fill({}) },
-  { name: "Second Floor", courtrooms: Array(4).fill({}) },
-  { name: "Third Floor", courtrooms: Array(5).fill({}) },
-  { name: "Fourth Floor", courtrooms: Array(4).fill({}) },
-  { name: "Fifth Floor", courtrooms: Array(5).fill({}) },
-  { name: "Sixth Floor", courtrooms: Array(4).fill({}) }
+  { name: "First Floor", courtrooms: Array.from({length: 5}, (_, i) => ({ name: "Courtroom " + (5 + i), judge: "Unassigned", time: "—", casesCount: 0, cases: [] })) },
+  { name: "Second Floor", courtrooms: Array.from({length: 4}, (_, i) => ({ name: "Courtroom " + (10 + i), judge: "Unassigned", time: "—", casesCount: 0, cases: [] })) },
+  { name: "Third Floor", courtrooms: Array.from({length: 5}, (_, i) => ({ name: "Courtroom " + (14 + i), judge: "Unassigned", time: "—", casesCount: 0, cases: [] })) },
+  { name: "Fourth Floor", courtrooms: Array.from({length: 4}, (_, i) => ({ name: "Courtroom " + (19 + i), judge: "Unassigned", time: "—", casesCount: 0, cases: [] })) },
+  { name: "Fifth Floor", courtrooms: Array.from({length: 5}, (_, i) => ({ name: "Courtroom " + (23 + i), judge: "Unassigned", time: "—", casesCount: 0, cases: [] })) },
+  { name: "Sixth Floor", courtrooms: Array.from({length: 4}, (_, i) => ({ name: "Courtroom " + (28 + i), judge: "Unassigned", time: "—", casesCount: 0, cases: [] })) }
 ];
 
 export function CourtroomLocator({ initialQuery, back }) {
