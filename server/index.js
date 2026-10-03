@@ -197,14 +197,14 @@ app.get("/api/advocate/portfolio/hearings", requireAuth, async (req, res) => {
         include: {
           hearings: {
             include: { courtroom: true, judge: true },
-            orderBy: { date: 'asc' }
+            orderBy: { date: "asc" }
           }
         }
       }
     }
   });
 
-  const allHearings = advocateCases.flatMap(ac => ac.case.hearings);
+  const allHearings = advocateCases.flatMap(ac => ac.case.hearings.map(h => ({ ...h, case: ac.case })));
   // Sort all hearings chronologically
   allHearings.sort((a, b) => new Date(a.date) - new Date(b.date));
 
