@@ -153,19 +153,26 @@ export function Public({ go, dashboard, onCaseSearch, onCourtroomSearch }) {
           <small className="cnr-help">Example: MHNS030080582025</small>
         </section>
         
-        <section className="courtroom-search-preview" style={{backgroundColor: '#0f2742', color: 'white', padding: '4rem 1rem'}}>
-          <div style={{maxWidth: '800px', margin: '0 auto', textAlign: 'center'}}>
-            <p className="eyebrow" style={{color: '#10b981', marginBottom: '0.5rem', letterSpacing: '2px', fontSize: '0.8rem', fontWeight: 'bold'}}>FIND MY COURT</p>
-            <h2 style={{fontSize: '2.5rem', marginBottom: '1rem'}}>Find your courtroom</h2>
-            <p style={{color: '#94a3b8', fontSize: '1.1rem', marginBottom: '2rem'}}>
+        <section className="case-search-preview">
+          <div>
+            <p className="eyebrow">FIND MY COURT</p>
+            <h2>Find your courtroom</h2>
+            <p>
               Search your CNR number to see the assigned floor and courtroom.
             </p>
-            <form className="searchbox cnr-searchbox" onSubmit={(e) => { e.preventDefault(); if (courtCnr.trim()) onCourtroomSearch(courtCnr.trim()); }} style={{margin: '0 auto'}}>
-              <Icon name="Building2" />
-              <input value={courtCnr} onChange={(e) => setCourtCnr(e.target.value.toUpperCase())} placeholder="Enter CNR number to find your court" />
-              <Button type="submit">Find my court</Button>
-            </form>
           </div>
+          <form className="searchbox cnr-searchbox" onSubmit={(e) => { e.preventDefault(); if (courtCnr.trim()) onCourtroomSearch(courtCnr.trim()); }}>
+            <Icon name="Building2" />
+            <input
+              value={courtCnr}
+              onChange={(e) => setCourtCnr(e.target.value.toUpperCase())}
+              placeholder="Enter CNR number to find your court"
+              aria-label="CNR number"
+              maxLength={24}
+            />
+            <Button type="submit">Find my court</Button>
+          </form>
+          <small className="cnr-help">Example: MHNS030080582025</small>
         </section>
 
         <section className="search-preview">
@@ -437,13 +444,13 @@ export function DashboardArt() {
           })}
         </b>
         <div className="week">
-          {["M", "T", "W", "T", "F", "S", "S"].map((x) => (
-            <span>{x}</span>
+          {["M", "T", "W", "T", "F", "S", "S"].map((x, i) => (
+            <span key={i}>{x}</span>
           ))}
         </div>
         <div className="days">
           {Array.from({ length: daysInMonth }, (_, i) => (
-            <i className={i + 1 === today.getDate() ? "selected" : ""}>
+            <i key={i} className={i + 1 === today.getDate() ? "selected" : ""}>
               {i + 1}
             </i>
           ))}
