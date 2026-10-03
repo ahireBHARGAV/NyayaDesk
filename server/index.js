@@ -172,6 +172,23 @@ app.post("/api/advocate/portfolio/cases", requireAuth, async (req, res) => {
   }
 });
 
+app.delete("/api/advocate/portfolio/cases/:caseId", requireAuth, async (req, res) => {
+  const caseId = decodeURIComponent(req.params.caseId);
+  const c = await prisma.case.findFirst({
+    where: { OR: [{ cnrNumber: caseId }, { id: caseId }] }
+  });
+  if (!c) return res.status(404).json({ detail: "Case not found." });
+  
+  try {
+    await prisma.advocateCase.deleteMany({
+      where: { userId: req.user.id, caseId: c.id }
+    });
+    return res.json({ detail: "Case removed from portfolio." });
+  } catch (err) {
+    return res.status(500).json({ detail: "Could not remove case." });
+  }
+});
+
 app.get("/api/advocate/portfolio/hearings", requireAuth, async (req, res) => {
   const advocateCases = await prisma.advocateCase.findMany({
     where: { userId: req.user.id },

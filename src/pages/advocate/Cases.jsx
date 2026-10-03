@@ -33,10 +33,18 @@ export function Cases({ setPage }) {
   };
   const remove = async (id) => {
     if (!window.confirm("Remove case " + id + " from your portfolio?")) return;
-    // Note: There's no DELETE endpoint for portfolio yet, so we just refresh
-    // In a real app, we'd call DELETE /api/advocate/portfolio/cases/:id
-    setMessage("Case " + id + " removed from view.");
-    await refresh();
+    const token = localStorage.getItem("nyaya_token");
+    const res = await fetch((import.meta.env.VITE_API_URL || "") + `/api/advocate/portfolio/cases/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    if (res.ok) {
+      setMessage("Case " + id + " removed from your portfolio.");
+      await refresh();
+    } else {
+      const err = await res.json().catch(() => ({}));
+      setErrorMsg(err.detail || "Failed to remove case from portfolio.");
+    }
   };
   const result = cases.filter(
     (c) =>
