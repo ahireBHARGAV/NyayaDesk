@@ -1,7 +1,7 @@
 import { createContext, useEffect, useState } from "react";
 import * as Icons from "lucide-react";
 import { Login, Role, Signup } from "./pages/public/Auth";
-import { CaseLookup, Public } from "./pages/public/Landing";
+import { CaseLookup, Public, CourtroomLocator } from "./pages/public/Landing";
 import { Advocate } from "./pages/advocate/Dashboard";
 import { Authority } from "./pages/authority/Authority";
 
@@ -101,6 +101,7 @@ export default function App() {
   });
   const [data, setData] = useState({ cases: [], hearings: [], courtrooms: [] });
   const [cnrQuery, setCnrQuery] = useState("");
+  const [courtroomQuery, setCourtroomQuery] = useState("");
   const go = (s) => {
     if (s === "advocate" || s === "authority") setRole(s);
     setScreen(s);

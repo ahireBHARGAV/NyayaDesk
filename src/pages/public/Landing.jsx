@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
+import React from "react";
 import { Badge, Button, Icon } from "../../App";
 
-export function Public({ go, dashboard, onCaseSearch }) {
+export function Public({ go, dashboard, onCaseSearch, onCourtroomSearch }) {
   const [query, setQuery] = useState("");
   const [cnr, setCnr] = useState("");
+  const [courtCnr, setCourtCnr] = useState("");
   const [profileMenu, setProfileMenu] = useState(false);
   const startCaseSearch = (event) => {
     event.preventDefault();
@@ -150,6 +152,22 @@ export function Public({ go, dashboard, onCaseSearch }) {
           </form>
           <small className="cnr-help">Example: MHNS030080582025</small>
         </section>
+        
+        <section className="courtroom-search-preview" style={{backgroundColor: '#0f2742', color: 'white', padding: '4rem 1rem'}}>
+          <div style={{maxWidth: '800px', margin: '0 auto', textAlign: 'center'}}>
+            <p className="eyebrow" style={{color: '#10b981', marginBottom: '0.5rem', letterSpacing: '2px', fontSize: '0.8rem', fontWeight: 'bold'}}>FIND MY COURT</p>
+            <h2 style={{fontSize: '2.5rem', marginBottom: '1rem'}}>Find your courtroom</h2>
+            <p style={{color: '#94a3b8', fontSize: '1.1rem', marginBottom: '2rem'}}>
+              Search your CNR number to see the assigned floor and courtroom.
+            </p>
+            <form className="searchbox cnr-searchbox" onSubmit={(e) => { e.preventDefault(); if (courtCnr.trim()) onCourtroomSearch(courtCnr.trim()); }} style={{margin: '0 auto'}}>
+              <Icon name="Building2" />
+              <input value={courtCnr} onChange={(e) => setCourtCnr(e.target.value.toUpperCase())} placeholder="Enter CNR number to find your court" />
+              <Button type="submit">Find my court</Button>
+            </form>
+          </div>
+        </section>
+
         <section className="search-preview">
           <div>
             <p className="eyebrow">CASE LAW RESEARCH</p>
@@ -446,6 +464,192 @@ export function DashboardArt() {
           <small>11:00 AM Ã‚Â· Courtroom 5</small>
         </div>
       </div>
+    </div>
+  );
+}
+
+
+const MOCK_FLOORS = [
+  {
+    name: "Ground Floor",
+    courtrooms: [
+      {
+        name: "Courtroom 1",
+        judge: "Justice A. Mehra",
+        time: "10:00 AM",
+        casesCount: 2,
+        cases: [
+          { time: "10:00 AM", cnr: "MHNS030080582025", title: "GS Mahanagar Co-operative Bank Ltd v. Amol Rajput", judge: "Justice A. Mehra", purpose: "Hearing" },
+          { time: "10:45 AM", cnr: "MHNS010022202023", title: "Akash Raju Pardeshi v. State", judge: "Justice A. Mehra", purpose: "Arguments" }
+        ]
+      },
+      {
+        name: "Courtroom 2",
+        judge: "Justice B. Rao",
+        time: "11:00 AM",
+        casesCount: 2,
+        cases: [
+          { time: "11:00 AM", cnr: "MHNS010022202023", title: "Akash Raju Pardeshi v. State", judge: "Justice B. Rao", purpose: "Hearing" },
+          { time: "11:45 AM", cnr: "MHNS010074882018", title: "Shekhar Manik Kshatriya v. State", judge: "Justice B. Rao", purpose: "Arguments" }
+        ]
+      },
+      { name: "Courtroom 3", judge: "Justice C. Shah", time: "12:00 AM", casesCount: 2, cases: [] },
+      { name: "Courtroom 4", judge: "Justice D. Sen", time: "13:00 AM", casesCount: 2, cases: [] }
+    ]
+  },
+  { name: "First Floor", courtrooms: Array(5).fill({}) },
+  { name: "Second Floor", courtrooms: Array(4).fill({}) },
+  { name: "Third Floor", courtrooms: Array(5).fill({}) },
+  { name: "Fourth Floor", courtrooms: Array(4).fill({}) },
+  { name: "Fifth Floor", courtrooms: Array(5).fill({}) },
+  { name: "Sixth Floor", courtrooms: Array(4).fill({}) }
+];
+
+export function CourtroomLocator({ back }) {
+  const [query, setQuery] = React.useState("");
+  const [activeFloor, setActiveFloor] = React.useState(null);
+  const [activeCourtroom, setActiveCourtroom] = React.useState(null);
+
+  const search = (e) => {
+    e.preventDefault();
+    const q = query.trim().toUpperCase();
+    if (q === "MHNS030080582025") {
+      setActiveFloor(0);
+      setActiveCourtroom(0);
+      document.getElementById("courtroom-locator-results").scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      alert("Courtroom not found for this CNR in today's schedule. (Try the sample CNR)");
+    }
+  };
+
+  return (
+    <div style={{fontFamily: 'Inter, sans-serif'}}>
+      
+      <nav className="public-nav" style={{backgroundColor: '#0f2742', borderBottom: '1px solid rgba(255,255,255,0.1)'}}>
+        <div className="brand" style={{color: 'white'}}>Nyaya<span>Desk</span></div>
+        <Button variant="secondary" onClick={back} style={{color: 'white', borderColor: 'rgba(255,255,255,0.3)'}}><Icon name="ArrowLeft" size={16} /> Back</Button>
+      </nav>
+      <section style={{backgroundColor: '#0f2742', color: 'white', padding: '5rem 1rem', textAlign: 'center'}}>
+        <p style={{color: '#10b981', letterSpacing: '1px', fontSize: '0.85rem', marginBottom: '1rem', fontWeight: 600, textTransform: 'uppercase'}}>Find My Court</p>
+        <h2 style={{fontSize: '2.5rem', marginBottom: '1rem', fontWeight: 600, color: 'white'}}>Find your courtroom</h2>
+        <p style={{color: '#94a3b8', fontSize: '1.1rem', margin: 0}}>Search your CNR number to see the assigned floor and courtroom.</p>
+      </section>
+
+      <section id="courtroom-locator-results" style={{backgroundColor: '#f8fafc', padding: '3rem 1rem', display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
+        <div style={{width: '100%', maxWidth: '1000px'}}>
+          <form className="searchbox" onSubmit={search} style={{maxWidth: '100%', margin: '0 0 1rem 0', display: 'flex', background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '5px'}}>
+            <div style={{display: 'flex', alignItems: 'center', padding: '0 15px', color: '#64748b'}}><Icon name="Search" /></div>
+            <input 
+              style={{flex: 1, border: 'none', outline: 'none', padding: '10px 0', fontSize: '1rem'}} 
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Enter CNR number to find your court" 
+            />
+            <Button type="submit" style={{borderRadius: '6px', padding: '10px 20px', backgroundColor: '#0f766e', color: 'white'}}>Find my court</Button>
+          </form>
+          
+          <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '2rem', color: '#64748b'}}>
+            <Icon name="Info" size={16} color="#10b981" />
+            <small style={{display: 'flex', alignItems: 'center', gap: '8px'}}>Try this sample CNR: <Badge>MHNS030080582025</Badge></small>
+          </div>
+          
+          <p style={{color: '#64748b', fontSize: '0.9rem', marginBottom: '1rem'}}>Browse today\'s court list by floor. Open a floor, then select a courtroom to view each scheduled case.</p>
+          
+          <div style={{display: 'flex', flexDirection: 'column', background: 'white', borderRadius: '8px', border: '1px solid #e2e8f0', overflow: 'hidden'}}>
+            {MOCK_FLOORS.map((floor, fIdx) => {
+              const isExpanded = activeFloor === fIdx;
+              return (
+                <div key={fIdx} style={{borderBottom: fIdx !== MOCK_FLOORS.length - 1 ? '1px solid #e2e8f0' : 'none'}}>
+                  <button 
+                    onClick={() => { setActiveFloor(isExpanded ? null : fIdx); setActiveCourtroom(null); }}
+                    style={{width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 1.5rem', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left'}}
+                  >
+                    <div style={{display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 600, color: '#1e293b'}}>
+                      <Icon name="Building2" size={20} color="#475569" /> {floor.name}
+                    </div>
+                    <div style={{display: 'flex', alignItems: 'center', gap: '15px', color: '#64748b', fontSize: '0.9rem'}}>
+                      <span>{floor.courtrooms.length} courtrooms</span>
+                      <Icon name={isExpanded ? "ChevronUp" : "ChevronDown"} size={16} />
+                    </div>
+                  </button>
+                  
+                  {isExpanded && floor.courtrooms[0].name && (
+                    <div style={{background: '#f8fafc', padding: '0 1rem 1rem 1rem'}}>
+                      <table style={{width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem'}}>
+                        <thead>
+                          <tr style={{color: '#64748b', borderBottom: '1px solid #e2e8f0'}}>
+                            <th style={{padding: '12px 16px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px'}}>Courtroom</th>
+                            <th style={{padding: '12px 16px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px'}}>Judge</th>
+                            <th style={{padding: '12px 16px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px'}}>First Time</th>
+                            <th style={{padding: '12px 16px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px'}}>Cases Today</th>
+                            <th style={{padding: '12px 16px'}}></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {floor.courtrooms.map((cr, cIdx) => {
+                            const isCrExpanded = activeCourtroom === cIdx;
+                            return (
+                              <React.Fragment key={cIdx}>
+                                <tr>
+                                  <td style={{padding: '12px 16px', fontWeight: 600, color: '#0f172a'}}>{cr.name}</td>
+                                  <td style={{padding: '12px 16px', color: '#334155'}}>{cr.judge}</td>
+                                  <td style={{padding: '12px 16px', color: '#334155'}}>{cr.time}</td>
+                                  <td style={{padding: '12px 16px', color: '#334155'}}>{cr.casesCount}</td>
+                                  <td style={{padding: '12px 16px', textAlign: 'right'}}>
+                                    <button 
+                                      onClick={() => setActiveCourtroom(isCrExpanded ? null : cIdx)}
+                                      style={{background: 'none', border: 'none', cursor: 'pointer', color: '#0f766e'}}
+                                    >
+                                      <Icon name={isCrExpanded ? "ChevronUp" : "ChevronDown"} size={20} />
+                                    </button>
+                                  </td>
+                                </tr>
+                                {isCrExpanded && cr.cases.length > 0 && (
+                                  <tr>
+                                    <td colSpan="5" style={{padding: '0 16px 16px 16px'}}>
+                                      <div style={{background: 'white', border: '1px solid #e2e8f0', borderRadius: '6px', overflow: 'hidden'}}>
+                                        <div style={{padding: '12px 16px', fontWeight: 600, borderBottom: '1px solid #e2e8f0', color: '#0f172a'}}>
+                                          Today's cases in {cr.name}
+                                        </div>
+                                        <table style={{width: '100%', borderCollapse: 'collapse'}}>
+                                          <thead>
+                                            <tr style={{background: '#f1f5f9', color: '#64748b', fontSize: '0.75rem', textTransform: 'uppercase'}}>
+                                              <th style={{padding: '10px 16px'}}>Time</th>
+                                              <th style={{padding: '10px 16px'}}>CNR Number</th>
+                                              <th style={{padding: '10px 16px'}}>Case</th>
+                                              <th style={{padding: '10px 16px'}}>Judge</th>
+                                              <th style={{padding: '10px 16px'}}>Purpose</th>
+                                            </tr>
+                                          </thead>
+                                          <tbody>
+                                            {cr.cases.map((c, idx) => (
+                                              <tr key={idx} style={{borderTop: '1px solid #e2e8f0', fontSize: '0.85rem'}}>
+                                                <td style={{padding: '12px 16px', color: '#64748b'}}>{c.time}</td>
+                                                <td style={{padding: '12px 16px', fontWeight: 600, color: '#0f766e'}}>{c.cnr}</td>
+                                                <td style={{padding: '12px 16px', fontWeight: 600, color: '#0f172a'}}>{c.title}</td>
+                                                <td style={{padding: '12px 16px', color: '#64748b'}}>{c.judge}</td>
+                                                <td style={{padding: '12px 16px', color: '#64748b'}}>{c.purpose}</td>
+                                              </tr>
+                                            ))}
+                                          </tbody>
+                                        </table>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                )}
+                              </React.Fragment>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
