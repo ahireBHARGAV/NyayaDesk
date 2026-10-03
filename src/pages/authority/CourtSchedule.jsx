@@ -22,15 +22,15 @@ const INITIAL_JUDGES = [
   { id: 'j4', name: 'Justice D. Sen' },
 ];
 
-const INITIAL_HEARINGS = [
+const getInitialHearings = () => [
   { id: 'h1', date: getTodayKey(), time: '10:30', courtroomId: 'cr1', cnr: 'MHNS030080582025', title: 'State vs Sharma', status: 'Scheduled' }
 ];
 
 export function CourtSchedule() {
-  const [date, setDate] = useState(getTodayKey());
+  const [date, setDate] = useState(getTodayKey);
   const [courtrooms, setCourtrooms] = useState(INITIAL_COURTROOMS);
   const [judges] = useState(INITIAL_JUDGES);
-  const [hearings, setHearings] = useState(INITIAL_HEARINGS);
+  const [hearings, setHearings] = useState(getInitialHearings);
   
   const [allocatingRoom, setAllocatingRoom] = useState(null);
   const [allocForm, setAllocForm] = useState({ cnr: "", title: "", time: "10:00" });
