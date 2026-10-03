@@ -153,26 +153,20 @@ export function Public({ go, dashboard, onCaseSearch, onCourtroomSearch }) {
           <small className="cnr-help">Example: MHNS030080582025</small>
         </section>
         
-        <section className="case-search-preview">
+        <section className="case-search-preview courtroom-search-preview">
           <div>
-            <p className="eyebrow">FIND MY COURT</p>
-            <h2>Find your courtroom</h2>
+            <p className="eyebrow">DAILY BOARD</p>
+            <h2>Check today's court schedule</h2>
             <p>
-              Search your CNR number to see the assigned floor and courtroom.
+              Browse today's active courtrooms and view scheduled cases across all floors.
             </p>
           </div>
-          <form className="searchbox cnr-searchbox" onSubmit={(e) => { e.preventDefault(); if (courtCnr.trim()) onCourtroomSearch(courtCnr.trim()); }}>
-            <Icon name="Building2" />
-            <input
-              value={courtCnr}
-              onChange={(e) => setCourtCnr(e.target.value.toUpperCase())}
-              placeholder="Enter CNR number to find your court"
-              aria-label="CNR number"
-              maxLength={24}
-            />
-            <Button type="submit">Find my court</Button>
-          </form>
-          <small className="cnr-help">Example: MHNS030080582025</small>
+          <div style={{display: 'flex', alignItems: 'center'}}>
+            <Button onClick={() => onCourtroomSearch()} style={{padding: '12px 24px'}}>
+              <Icon name="Building2" size={18} style={{marginRight: '8px'}} />
+              Browse court schedule
+            </Button>
+          </div>
         </section>
 
         <section className="search-preview">
@@ -512,39 +506,68 @@ const MOCK_FLOORS = [
   { name: "Sixth Floor", courtrooms: Array(4).fill({}) }
 ];
 
-export function CourtroomLocator({ back }) {
-  const [query, setQuery] = React.useState("");
+export function CourtroomLocator({ initialQuery, back }) {
+  const [query, setQuery] = React.useState(initialQuery || "");
   const [activeFloor, setActiveFloor] = React.useState(null);
   const [activeCourtroom, setActiveCourtroom] = React.useState(null);
+  const [foundCase, setFoundCase] = React.useState(null);
+
+  const performSearch = (q) => {
+    let found = null;
+    for (let f = 0; f < MOCK_FLOORS.length; f++) {
+      for (let c = 0; c < MOCK_FLOORS[f].courtrooms.length; c++) {
+        const cr = MOCK_FLOORS[f].courtrooms[c];
+        if (cr.cases) {
+          for (let i = 0; i < cr.cases.length; i++) {
+            if (cr.cases[i].cnr === q) {
+              found = { floor: MOCK_FLOORS[f].name, fIdx: f, crIdx: c, cr: cr.name, case: cr.cases[i] };
+              break;
+            }
+          }
+        }
+        if (found) break;
+      }
+      if (found) break;
+    }
+    
+    if (found) {
+      setFoundCase(found);
+      setActiveFloor(found.fIdx);
+      setActiveCourtroom(found.crIdx);
+      document.getElementById("courtroom-locator-results").scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      setFoundCase(null);
+      alert("Case not found in today's courtroom schedule. (Try the sample CNR: MHNS030080582025)");
+    }
+  };
+
+  React.useEffect(() => {
+    if (initialQuery) {
+      performSearch(initialQuery.trim().toUpperCase());
+    }
+  }, [initialQuery]);
 
   const search = (e) => {
     e.preventDefault();
-    const q = query.trim().toUpperCase();
-    if (q === "MHNS030080582025") {
-      setActiveFloor(0);
-      setActiveCourtroom(0);
-      document.getElementById("courtroom-locator-results").scrollIntoView({ behavior: "smooth", block: "start" });
-    } else {
-      alert("Courtroom not found for this CNR in today's schedule. (Try the sample CNR)");
-    }
+    performSearch(query.trim().toUpperCase());
   };
 
   return (
     <div style={{fontFamily: 'Inter, sans-serif'}}>
-      
       <nav className="public-nav" style={{backgroundColor: '#0f2742', borderBottom: '1px solid rgba(255,255,255,0.1)'}}>
         <div className="brand" style={{color: 'white'}}>Nyaya<span>Desk</span></div>
         <Button variant="secondary" onClick={back} style={{color: 'white', borderColor: 'rgba(255,255,255,0.3)'}}><Icon name="ArrowLeft" size={16} /> Back</Button>
       </nav>
       <section style={{backgroundColor: '#0f2742', color: 'white', padding: '5rem 1rem', textAlign: 'center'}}>
-        <p style={{color: '#10b981', letterSpacing: '1px', fontSize: '0.85rem', marginBottom: '1rem', fontWeight: 600, textTransform: 'uppercase'}}>Find My Court</p>
-        <h2 style={{fontSize: '2.5rem', marginBottom: '1rem', fontWeight: 600, color: 'white'}}>Find your courtroom</h2>
-        <p style={{color: '#94a3b8', fontSize: '1.1rem', margin: 0}}>Search your CNR number to see the assigned floor and courtroom.</p>
+        <p style={{color: '#10b981', letterSpacing: '1px', fontSize: '0.85rem', marginBottom: '1rem', fontWeight: 600, textTransform: 'uppercase'}}>TODAY'S COURTROOM SCHEDULE</p>
+        <h2 style={{fontSize: '2.5rem', marginBottom: '1rem', fontWeight: 600, color: 'white'}}>Search Your Case by CNR Number</h2>
+        <p style={{color: '#94a3b8', fontSize: '1.1rem', margin: 0}}>Find the exact courtroom number, floor, and timing for your case.</p>
       </section>
 
       <section id="courtroom-locator-results" style={{backgroundColor: '#f8fafc', padding: '3rem 1rem', display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
         <div style={{width: '100%', maxWidth: '1000px'}}>
-          <form className="searchbox" onSubmit={search} style={{maxWidth: '100%', margin: '0 0 1rem 0', display: 'flex', background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '5px'}}>
+          
+          <form className="searchbox" onSubmit={search} style={{maxWidth: '100%', margin: '0 0 2rem 0', display: 'flex', background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '5px'}}>
             <div style={{display: 'flex', alignItems: 'center', padding: '0 15px', color: '#64748b'}}><Icon name="Search" /></div>
             <input 
               style={{flex: 1, border: 'none', outline: 'none', padding: '10px 0', fontSize: '1rem'}} 
@@ -554,13 +577,33 @@ export function CourtroomLocator({ back }) {
             />
             <Button type="submit" style={{borderRadius: '6px', padding: '10px 20px', backgroundColor: '#0f766e', color: 'white'}}>Find my court</Button>
           </form>
-          
-          <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '2rem', color: '#64748b'}}>
-            <Icon name="Info" size={16} color="#10b981" />
-            <small style={{display: 'flex', alignItems: 'center', gap: '8px'}}>Try this sample CNR: <Badge>MHNS030080582025</Badge></small>
-          </div>
-          
-          <p style={{color: '#64748b', fontSize: '0.9rem', marginBottom: '1rem'}}>Browse today\'s court list by floor. Open a floor, then select a courtroom to view each scheduled case.</p>
+
+          {foundCase && (
+            <div style={{backgroundColor: '#ecfdf5', border: '1px solid #10b981', borderRadius: '8px', padding: '1.5rem', marginBottom: '2rem'}}>
+              <div style={{display: 'flex', alignItems: 'center', gap: '10px', color: '#047857', marginBottom: '1rem'}}>
+                <Icon name="CheckCircle2" size={24} />
+                <h3 style={{margin: 0, fontSize: '1.25rem', fontWeight: 600}}>Case Found in Today's Schedule</h3>
+              </div>
+              <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', backgroundColor: 'white', padding: '1.5rem', borderRadius: '6px', border: '1px solid #d1fae5'}}>
+                <div>
+                  <small style={{color: '#64748b', display: 'block', marginBottom: '0.25rem'}}>CNR Number</small>
+                  <strong style={{color: '#0f172a'}}>{foundCase.case.cnr}</strong>
+                </div>
+                <div>
+                  <small style={{color: '#64748b', display: 'block', marginBottom: '0.25rem'}}>Case Title</small>
+                  <strong style={{color: '#0f172a'}}>{foundCase.case.title}</strong>
+                </div>
+                <div>
+                  <small style={{color: '#64748b', display: 'block', marginBottom: '0.25rem'}}>Location</small>
+                  <strong style={{color: '#0f172a'}}>{foundCase.floor}, {foundCase.cr}</strong>
+                </div>
+                <div>
+                  <small style={{color: '#64748b', display: 'block', marginBottom: '0.25rem'}}>Timing & Judge</small>
+                  <strong style={{color: '#0f172a'}}>{foundCase.case.time} (Before {foundCase.case.judge})</strong>
+                </div>
+              </div>
+            </div>
+          )}
           
           <div style={{display: 'flex', flexDirection: 'column', background: 'white', borderRadius: '8px', border: '1px solid #e2e8f0', overflow: 'hidden'}}>
             {MOCK_FLOORS.map((floor, fIdx) => {
