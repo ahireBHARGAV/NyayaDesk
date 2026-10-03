@@ -137,7 +137,7 @@ export function Calendar() {
                   className={`calendar-date ${events.length || hasNotes ? "has-events" : ""}`}
                   onClick={() => setSelected(dateKey)}
                 >
-                  <b>{i + 1} {hasNotes && <span style={{color:'#f59e0b', fontSize:'0.7rem'}}>&bull;</span>}</b>
+                  <b>{i + 1} {hasNotes && <span style={{color:"#f59e0b", fontSize:"0.8rem"}}>&#9679;</span>}</b>
                   {events.slice(0, 2).map((event, idx) => (
                     <small key={idx}>
                       {event.time} &middot; {event.case}
