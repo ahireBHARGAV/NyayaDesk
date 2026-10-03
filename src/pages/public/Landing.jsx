@@ -556,7 +556,7 @@ export function CourtroomLocator({ initialQuery, back }) {
     <div style={{fontFamily: 'Inter, sans-serif'}}>
       <nav className="public-nav" style={{backgroundColor: '#0f2742', borderBottom: '1px solid rgba(255,255,255,0.1)'}}>
         <div className="brand" style={{color: 'white'}}>Nyaya<span>Desk</span></div>
-        <Button variant="secondary" onClick={back} style={{color: 'white', borderColor: 'rgba(255,255,255,0.3)'}}><Icon name="ArrowLeft" size={16} /> Back</Button>
+        <Button variant="secondary" onClick={back} style={{color: 'black', borderColor: '#e2e8f0'}}><Icon name="ArrowLeft" size={16} /> Back</Button>
       </nav>
       <section style={{backgroundColor: '#0f2742', color: 'white', padding: '5rem 1rem', textAlign: 'center'}}>
         <p style={{color: '#10b981', letterSpacing: '1px', fontSize: '0.85rem', marginBottom: '1rem', fontWeight: 600, textTransform: 'uppercase'}}>TODAY'S COURTROOM SCHEDULE</p>
