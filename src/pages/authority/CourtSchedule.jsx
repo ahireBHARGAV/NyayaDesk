@@ -1,71 +1,76 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Badge, Button, Icon, PageTitle, getTodayKey } from "../../App";
 
-export function CourtSchedule({ setPage }) {
+const MOCK_DB = {
+  "MHNS030080582025": "State vs Sharma (Criminal Appeal)",
+  "MHNS030112342025": "Singh vs Pvt Ltd (Corporate Dispute)",
+  "MHNS030299992025": "Deshmukh vs BMC (Civil Writ)",
+  "MHNS111111112025": "Rao vs State (Bail Application)",
+};
+
+const INITIAL_COURTROOMS = [
+  { id: 'cr1', room: 'Courtroom 1 (Ground Floor)', judgeId: 'j1' },
+  { id: 'cr2', room: 'Courtroom 2 (Ground Floor)', judgeId: 'j2' },
+  { id: 'cr3', room: 'Courtroom 3 (First Floor)', judgeId: 'j3' },
+  { id: 'cr4', room: 'Courtroom 4 (First Floor)', judgeId: '' },
+];
+
+const INITIAL_JUDGES = [
+  { id: 'j1', name: 'Justice A. Mehra' },
+  { id: 'j2', name: 'Justice B. Rao' },
+  { id: 'j3', name: 'Justice C. Shah' },
+  { id: 'j4', name: 'Justice D. Sen' },
+];
+
+const INITIAL_HEARINGS = [
+  { id: 'h1', date: getTodayKey(), time: '10:30', courtroomId: 'cr1', cnr: 'MHNS030080582025', title: 'State vs Sharma', status: 'Scheduled' }
+];
+
+export function CourtSchedule() {
   const [date, setDate] = useState(getTodayKey());
-  const [courtrooms, setCourtrooms] = useState([]);
-  const [judges, setJudges] = useState([]);
-  const [cases, setCases] = useState([]);
-  const [hearings, setHearings] = useState([]);
+  const [courtrooms, setCourtrooms] = useState(INITIAL_COURTROOMS);
+  const [judges] = useState(INITIAL_JUDGES);
+  const [hearings, setHearings] = useState(INITIAL_HEARINGS);
   
   const [allocatingRoom, setAllocatingRoom] = useState(null);
-  const [allocForm, setAllocForm] = useState({ caseId: "", time: "10:00" });
+  const [allocForm, setAllocForm] = useState({ cnr: "", title: "", time: "10:00" });
 
-  const fetchData = () => {
-    const token = localStorage.getItem("nyaya_token");
-    const headers = { Authorization: "Bearer " + token };
-    
-    Promise.all([
-      fetch((import.meta.env.VITE_API_URL || "") + "/api/authority/courtrooms", { headers }).then(r => r.json()),
-      fetch((import.meta.env.VITE_API_URL || "") + "/api/authority/judges", { headers }).then(r => r.json()),
-      fetch((import.meta.env.VITE_API_URL || "") + "/api/authority/cases", { headers }).then(r => r.json()),
-      fetch((import.meta.env.VITE_API_URL || "") + "/api/hearings/", { headers }).then(r => r.json())
-    ]).then(([cr, j, c, h]) => {
-      setCourtrooms(Array.isArray(cr) ? cr : []);
-      setJudges(Array.isArray(j) ? j : []);
-      setCases(Array.isArray(c) ? c : []);
-      setHearings(Array.isArray(h) ? h : []);
-    }).catch(console.error);
+  const handleJudgeChange = (courtroomId, judgeId) => {
+    setCourtrooms(prev => prev.map(cr => cr.id === courtroomId ? { ...cr, judgeId } : cr));
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const handleJudgeChange = async (courtroomId, judgeId) => {
-    const token = localStorage.getItem("nyaya_token");
-    const res = await fetch((import.meta.env.VITE_API_URL || "") + "/api/authority/courtrooms/" + courtroomId, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
-      body: JSON.stringify({ judgeId: judgeId || null })
-    });
-    if (res.ok) fetchData();
-  };
-
-  const allocateCase = async (courtroomId, judgeId) => {
-    if (!allocForm.caseId || !allocForm.time) return alert("Please select a case and time.");
-    if (!judgeId) return alert("Please assign a judge to this courtroom first.");
-    
-    const token = localStorage.getItem("nyaya_token");
-    const res = await fetch((import.meta.env.VITE_API_URL || "") + "/api/authority/hearings", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
-      body: JSON.stringify({
-        caseId: allocForm.caseId,
-        date: date,
-        time: allocForm.time,
-        courtroomId: courtroomId,
-        judgeId: judgeId
-      })
-    });
-    
-    if (res.ok) {
-      setAllocatingRoom(null);
-      setAllocForm({ caseId: "", time: "10:00" });
-      fetchData();
+  const handleFetchCase = () => {
+    if (!allocForm.cnr) return alert("Please enter a CNR number first.");
+    const found = MOCK_DB[allocForm.cnr.toUpperCase()];
+    if (found) {
+      setAllocForm({ ...allocForm, title: found });
     } else {
-      const err = await res.json().catch(() => ({}));
-      alert(err.detail || "Failed to allocate case.");
+      setAllocForm({ ...allocForm, title: "Unknown Case (Manual Entry)" });
+    }
+  };
+
+  const allocateCase = (courtroomId) => {
+    if (!allocForm.cnr || !allocForm.title || !allocForm.time) return alert("Please fetch a case and specify time.");
+    
+    const newHearing = {
+      id: 'h' + Date.now(),
+      date,
+      time: allocForm.time,
+      courtroomId,
+      cnr: allocForm.cnr.toUpperCase(),
+      title: allocForm.title,
+      status: 'Scheduled'
+    };
+    
+    setHearings([...hearings, newHearing]);
+    setAllocatingRoom(null);
+    setAllocForm({ cnr: "", title: "", time: "10:00" });
+  };
+
+  const addCourtroom = () => {
+    const name = prompt("Enter new courtroom name (e.g. Courtroom 5 (Second Floor)):");
+    if (name) {
+      setCourtrooms([...courtrooms, { id: 'cr' + Date.now(), room: name, judgeId: '' }]);
     }
   };
 
@@ -73,8 +78,9 @@ export function CourtSchedule({ setPage }) {
   courtrooms.forEach(cr => { hearingsByRoom[cr.id] = []; });
   
   hearings.filter(h => h.date === date).forEach(h => {
-    const cr = courtrooms.find(c => c.room === h.room);
-    if (cr) hearingsByRoom[cr.id].push(h);
+    if (hearingsByRoom[h.courtroomId]) {
+      hearingsByRoom[h.courtroomId].push(h);
+    }
   });
   
   Object.keys(hearingsByRoom).forEach(id => {
@@ -83,7 +89,10 @@ export function CourtSchedule({ setPage }) {
 
   return (
     <>
-      <PageTitle title="Courtroom Management" sub="Automated Schedule & Allocation System" />
+      <div style={{display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1rem"}}>
+        <PageTitle title="Courtroom Management" sub="Automated Schedule & Allocation System" />
+        <Button onClick={addCourtroom}><Icon name="Plus" size={16} /> Add Courtroom</Button>
+      </div>
       
       <section className="panel" style={{marginBottom: "2rem"}}>
         <div style={{display: "flex", justifyContent: "space-between", alignItems: "center"}}>
@@ -136,8 +145,8 @@ export function CourtSchedule({ setPage }) {
                       <tr key={h.id} style={{borderBottom: "1px solid #f1f5f9"}}>
                         <td style={{padding: "12px 8px", fontWeight: "600", color: "#0f766e"}}>{h.time}</td>
                         <td style={{padding: "12px 8px"}}>
-                          <div style={{fontWeight: "500", color: "#0f172a"}}>{h.case}</div>
-                          {h.caseId && <div style={{fontSize: "0.8rem", color: "#64748b"}}>CNR: {h.caseId}</div>}
+                          <div style={{fontWeight: "500", color: "#0f172a"}}>{h.title}</div>
+                          {h.cnr && <div style={{fontSize: "0.8rem", color: "#64748b"}}>CNR: {h.cnr}</div>}
                         </td>
                         <td style={{padding: "12px 8px"}}><Badge>{h.status}</Badge></td>
                       </tr>
@@ -151,31 +160,53 @@ export function CourtSchedule({ setPage }) {
               )}
 
               {allocatingRoom === cr.id ? (
-                <div style={{backgroundColor: "#f1f5f9", padding: "1rem", borderRadius: "6px", display: "flex", gap: "10px", alignItems: "center", marginTop: "1rem"}}>
-                  <input 
-                    type="time" 
-                    value={allocForm.time} 
-                    onChange={e => setAllocForm({...allocForm, time: e.target.value})}
-                    style={{padding: "8px", border: "1px solid #cbd5e1", borderRadius: "4px"}}
-                  />
-                  <select 
-                    value={allocForm.caseId}
-                    onChange={e => setAllocForm({...allocForm, caseId: e.target.value})}
-                    style={{flex: 1, padding: "8px", border: "1px solid #cbd5e1", borderRadius: "4px"}}
-                  >
-                    <option value="">-- Select Case to Allot --</option>
-                    {cases.map(c => (
-                      <option key={c.id} value={c.id}>{c.id} - {c.title}</option>
-                    ))}
-                  </select>
-                  <Button onClick={() => allocateCase(cr.id, cr.judgeId)}>Allot</Button>
-                  <Button variant="secondary" onClick={() => setAllocatingRoom(null)}>Cancel</Button>
+                <div style={{backgroundColor: "#f1f5f9", padding: "1.5rem", borderRadius: "6px", marginTop: "1rem"}}>
+                  <h4 style={{marginTop: 0, marginBottom: "1rem", color: "#0f172a"}}>Allot Case to {cr.room}</h4>
+                  <div style={{display: "flex", gap: "10px", alignItems: "flex-end", marginBottom: "1rem"}}>
+                    <div style={{flex: 1}}>
+                      <label style={{display: "block", fontSize: "0.85rem", color: "#64748b", marginBottom: "4px"}}>CNR Number</label>
+                      <input 
+                        type="text" 
+                        placeholder="e.g. MHNS030080582025"
+                        value={allocForm.cnr} 
+                        onChange={e => setAllocForm({...allocForm, cnr: e.target.value})}
+                        style={{width: "100%", padding: "8px", border: "1px solid #cbd5e1", borderRadius: "4px"}}
+                      />
+                    </div>
+                    <Button variant="secondary" onClick={handleFetchCase}>Fetch Details</Button>
+                  </div>
+                  
+                  <div style={{display: "flex", gap: "10px", alignItems: "flex-end"}}>
+                    <div style={{flex: 2}}>
+                      <label style={{display: "block", fontSize: "0.85rem", color: "#64748b", marginBottom: "4px"}}>Case Title</label>
+                      <input 
+                        type="text" 
+                        value={allocForm.title} 
+                        onChange={e => setAllocForm({...allocForm, title: e.target.value})}
+                        style={{width: "100%", padding: "8px", border: "1px solid #cbd5e1", borderRadius: "4px"}}
+                      />
+                    </div>
+                    <div style={{flex: 1}}>
+                      <label style={{display: "block", fontSize: "0.85rem", color: "#64748b", marginBottom: "4px"}}>Time</label>
+                      <input 
+                        type="time" 
+                        value={allocForm.time} 
+                        onChange={e => setAllocForm({...allocForm, time: e.target.value})}
+                        style={{width: "100%", padding: "8px", border: "1px solid #cbd5e1", borderRadius: "4px"}}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div style={{display: "flex", gap: "10px", marginTop: "1.5rem"}}>
+                    <Button onClick={() => allocateCase(cr.id)}>Confirm Allotment</Button>
+                    <Button variant="secondary" onClick={() => setAllocatingRoom(null)}>Cancel</Button>
+                  </div>
                 </div>
               ) : (
                 <div style={{marginTop: "1rem"}}>
                   <Button variant="secondary" onClick={() => {
                     setAllocatingRoom(cr.id);
-                    setAllocForm({ caseId: "", time: "10:00" });
+                    setAllocForm({ cnr: "", title: "", time: "10:00" });
                   }}>
                     <Icon name="Plus" size={16} /> Allot Case to {cr.room}
                   </Button>
