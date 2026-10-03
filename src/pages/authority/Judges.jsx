@@ -8,7 +8,7 @@ export function Judges() {
   const refresh = async () => {
     const token = localStorage.getItem("nyaya_token");
     const res = await fetch((import.meta.env.VITE_API_URL || "") + '/api/authority/judges', { headers: { Authorization: `Bearer ${token}` } });
-    if (res.ok) setJudges(await res.json());
+    if (res && res.ok) setJudges(await res.json());
   };
 
   useEffect(() => { refresh(); }, []);
@@ -43,7 +43,7 @@ export function Judges() {
             <span>Name</span>
             <span>Internal ID</span>
           </div>
-          {judges.map(j => (
+          {(Array.isArray(judges) ? judges : []).map(j => (
             <div className="tr" key={j.id}>
               <b>{j.name}</b>
               <span className="text-secondary">{j.id}</span>

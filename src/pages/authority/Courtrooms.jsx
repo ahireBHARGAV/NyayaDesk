@@ -10,10 +10,10 @@ export function Courtrooms() {
     const headers = { Authorization: `Bearer ${token}` };
     
     const crs = await fetch((import.meta.env.VITE_API_URL || "") + '/api/authority/courtrooms', { headers });
-    if (crs.ok) setCourtrooms(await crs.json());
+    if (crs && crs.ok) setCourtrooms(await crs.json());
     
     const js = await fetch((import.meta.env.VITE_API_URL || "") + '/api/authority/judges', { headers });
-    if (js.ok) setJudges(await js.json());
+    if (js && js.ok) setJudges(await js.json());
   };
 
   useEffect(() => { refresh(); }, []);
@@ -39,7 +39,7 @@ export function Courtrooms() {
             <span>Assigned Judge</span>
             <span>Actions</span>
           </div>
-          {courtrooms.map(c => (
+          {(Array.isArray(courtrooms) ? courtrooms : []).map(c => (
             <div className="tr" key={c.id}>
               <b>{c.room}</b>
               <Badge>{c.status}</Badge>
@@ -50,7 +50,7 @@ export function Courtrooms() {
                   style={{padding: '0.25rem', border: '1px solid #ddd', borderRadius: '4px'}}
                 >
                   <option value="">Unassigned</option>
-                  {judges.map(j => <option key={j.id} value={j.id}>{j.name}</option>)}
+                  {(Array.isArray(judges) ? judges : []).map(j => <option key={j.id} value={j.id}>{j.name}</option>)}
                 </select>
               </span>
               <span>

@@ -8,12 +8,12 @@ export function Cases({ setPage }) {
   useEffect(() => {
     const token = localStorage.getItem("nyaya_token");
     fetch((import.meta.env.VITE_API_URL || "") + "/api/authority/cases", { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.json())
+      .then(r => r.ok ? r.json() : Promise.reject(new Error("API Error")))
       .then(setCases)
       .catch(console.error);
   }, []);
 
-  const result = cases.filter(c => 
+  const result = (Array.isArray(cases) ? cases : []).filter(c => 
     c.id.toLowerCase().includes(query.toLowerCase()) || 
     c.title.toLowerCase().includes(query.toLowerCase())
   );

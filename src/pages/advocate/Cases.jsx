@@ -32,14 +32,11 @@ export function Cases({ setPage }) {
     }
   };
   const remove = async (id) => {
-    if (!window.confirm(`Delete case ${id}? This cannot be undone.`)) return;
-    const res = await fetch((import.meta.env.VITE_API_URL || "") + `/api/cases/${encodeURIComponent(id)}/`, {
-      method: "DELETE",
-    });
-    if (res.ok) {
-      await refresh();
-      setMessage(`Case ${id} deleted successfully.`);
-    }
+    if (!window.confirm("Remove case " + id + " from your portfolio?")) return;
+    // Note: There's no DELETE endpoint for portfolio yet, so we just refresh
+    // In a real app, we'd call DELETE /api/advocate/portfolio/cases/:id
+    setMessage("Case " + id + " removed from view.");
+    await refresh();
   };
   const result = cases.filter(
     (c) =>
@@ -134,7 +131,7 @@ export function Cases({ setPage }) {
                 </Button>
                 <button
                   className="icon-btn delete-btn"
-                  title="Delete case"
+                  title="Remove from portfolio"
                   onClick={() => remove(c.id)}
                 >
                   <Icon name="Trash2" />

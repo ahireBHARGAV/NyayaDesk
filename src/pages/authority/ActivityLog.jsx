@@ -1,40 +1,26 @@
+import { useState, useEffect } from "react";
 import { Badge, PageTitle } from "../../App";
 
 export function ActivityLog({ compact = false }) {
-  const rows = [
-    [
-      "Judge assigned",
-      "Courtroom 2",
-      "Justice B. Rao",
-      "Ã¢â‚¬â€",
-      "09:10 AM",
-      "Completed",
-    ],
-    [
-      "Case assigned",
-      "Courtroom 1",
-      "Justice A. Mehra",
-      "ABC/2026",
-      "08:55 AM",
-      "Completed",
-    ],
-    [
-      "Judge marked absent",
-      "Courtroom 3",
-      "Justice C. Shah",
-      "GHI/2026",
-      "08:30 AM",
-      "Updated",
-    ],
-    [
-      "Replacement assigned",
-      "Courtroom 3",
-      "Justice D. Sen",
-      "GHI/2026",
-      "08:42 AM",
-      "Completed",
-    ],
-  ];
+  const [logs, setLogs] = useState([]);
+
+  useEffect(() => {
+    fetch((import.meta.env.VITE_API_URL || "") + "/api/hearings/")
+      .then(r => r.ok ? r.json() : [])
+      .then(d => {
+        const items = (Array.isArray(d) ? d : []).map(h => ({
+          action: "Hearing scheduled",
+          room: h.room || "Unassigned",
+          judge: h.judge || "Unassigned",
+          caseTitle: h.case || "—",
+          time: h.date + (h.time ? " " + h.time : ""),
+          status: h.status || "Scheduled",
+        }));
+        setLogs(items);
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <section className="panel">
       <div className="panel-title">
@@ -54,11 +40,18 @@ export function ActivityLog({ compact = false }) {
             <span>Status</span>
           </div>
         )}
-        {rows.slice(0, compact ? 3 : 4).map((r) => (
-          <div className="tr">
-            {r.map((v, i) => (i === 5 ? <Badge>{v}</Badge> : <span>{v}</span>))}
+        {logs.length > 0 ? logs.slice(0, compact ? 3 : 20).map((r, i) => (
+          <div className="tr" key={i}>
+            <span>{r.action}</span>
+            <span>{r.room}</span>
+            <span>{r.judge}</span>
+            <span>{r.caseTitle}</span>
+            <span>{r.time}</span>
+            <Badge>{r.status}</Badge>
           </div>
-        ))}
+        )) : (
+          <div style={{padding: "1rem", color: "#888"}}>No activity recorded yet.</div>
+        )}
       </div>
     </section>
   );

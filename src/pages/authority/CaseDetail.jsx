@@ -15,13 +15,13 @@ export function CaseDetail({ setPage }) {
     
     try {
       const res = await fetch((import.meta.env.VITE_API_URL || "") + `/api/authority/cases/${encodeURIComponent(selected)}`, { headers });
-      if (res.ok) setItem(await res.json());
+      if (res && res.ok) setItem(await res.json());
       
       const crs = await fetch((import.meta.env.VITE_API_URL || "") + '/api/authority/courtrooms', { headers });
-      if (crs.ok) setCourtrooms(await crs.json());
+      if (crs && crs.ok) setCourtrooms(await crs.json());
       
       const js = await fetch((import.meta.env.VITE_API_URL || "") + '/api/authority/judges', { headers });
-      if (js.ok) setJudges(await js.json());
+      if (js && js.ok) setJudges(await js.json());
     } catch(e) { console.error(e); }
   };
 

@@ -1,63 +1,57 @@
+import { useState, useEffect } from "react";
 import { Badge, Button, Icon, PageTitle } from "../../App";
 
 export function Notifications({ clear, authority }) {
-  clear();
-  const data = authority
-    ? [
-        "Judge C marked absent for Courtroom 3.",
-        "Replacement Judge required.",
-        "Case ABC assigned to Courtroom 1.",
-      ]
-    : [
-        "Hearing tomorrow — Case ABC vs XYZ",
-        "Filing deadline approaching — Case DEF vs GHI",
-        "Courtroom 3 schedule has been updated.",
-      ];
-  const legacyData = authority
-    ? [
-        "Judge C marked absent for Courtroom 3.",
-        "Replacement Judge required.",
-        "Case ABC assigned to Courtroom 1.",
-      ]
-    : [
-        "Hearing tomorrow Ã¢â‚¬â€ Case ABC vs XYZ",
-        "Filing deadline approaching Ã¢â‚¬â€ Case DEF vs GHI",
-        "Courtroom 3 schedule has been updated.",
-      ];
+  const [notifications, setNotifications] = useState([]);
+
+  useEffect(() => {
+    clear();
+    fetch((import.meta.env.VITE_API_URL || "") + "/api/notifications/")
+      .then(r => r.ok ? r.json() : [])
+      .then(d => setNotifications(Array.isArray(d) ? d : []))
+      .catch(() => {});
+  }, []);
+
+  const markRead = async (id) => {
+    await fetch((import.meta.env.VITE_API_URL || "") + "/api/notifications/" + id + "/", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ read: true }),
+    });
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  };
+
+  const iconForType = (type) => {
+    if (type === "hearing") return "BellRing";
+    if (type === "action") return "AlertCircle";
+    return "Landmark";
+  };
+
   return (
     <>
-      <PageTitle
-        title="Notifications"
-        sub="Updates that need your attention."
-      />
+      <PageTitle title="Notifications" sub="Updates that need your attention." />
       <section className="panel notifications">
-        {data.map((x, i) => (
-          <article>
+        {notifications.length > 0 ? notifications.map((n) => (
+          <article key={n.id} style={{opacity: n.read ? 0.6 : 1}}>
             <span>
-              <Icon
-                name={
-                  i === 0 ? "BellRing" : i === 1 ? "AlertCircle" : "Landmark"
-                }
-              />
+              <Icon name={iconForType(n.type)} />
             </span>
             <div>
-              <h3>
-                {i === 0
-                  ? "Hearing Reminder"
-                  : i === 1
-                    ? "Action Required"
-                    : "Court Update"}
-              </h3>
-              <p>{x}</p>
-              <small>
-                {i + 1} hour{i ? "s" : ""} ago
-              </small>
+              <h3>{n.type ? n.type.charAt(0).toUpperCase() + n.type.slice(1) : "Update"}</h3>
+              <p>{n.message}</p>
             </div>
-            <Button variant="small secondary">
-              {i === 1 ? "Mark as Read" : "View Case"}
-            </Button>
+            {!n.read && (
+              <Button variant="small secondary" onClick={() => markRead(n.id)}>
+                Mark as Read
+              </Button>
+            )}
           </article>
-        ))}
+        )) : (
+          <div style={{padding: "2rem", textAlign: "center", color: "#888"}}>
+            <Icon name="BellOff" size={32} />
+            <p style={{marginTop: "0.5rem"}}>No notifications at this time.</p>
+          </div>
+        )}
       </section>
     </>
   );
